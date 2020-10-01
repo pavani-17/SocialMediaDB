@@ -64,3 +64,99 @@ CREATE TABLE PROFILE (
     sexes ENUM('Male', 'Female', 'Others', 'PreferNotToSay'),
     CONSTRAINT OWNS_PROFILE FOREIGN KEY (user_id) REFERENCES USER (user_id) on DELETE CASCADE on UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+DROP TABLE IF EXISTS EDUCATION;
+CREATE TABLE EDUCATION (
+    user_id INT,
+    education VARCHAR(100),
+    PRIMARY KEY (user_id, education),
+    FOREIGN KEY (user_id) REFERENCES PROFILE(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS PAGE;
+CREATE TABLE PAGE (
+    page_id int AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    page_name varchar(100) NOT NULL,
+    owner_id int,
+    FOREIGN KEY (owner_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS BUSINESS_PLACE;
+CREATE TABLE BUSINESS_PLACE (
+    page_id int PRIMARY KEY,
+    owner_name varchar(100) NOT NULL,
+    location varchar(100),
+    FOREIGN KEY (page_id) REFERENCES PAGE(page_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS PROD_BP;
+CREATE TABLE PROD_BP(
+    page_id int,
+    name varchar(50),
+    price decimal(10,2),
+    FOREIGN KEY (page_id) REFERENCES BUSINESS_PLACE(page_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY(page_id,prod_name,prod_price)
+);
+
+DROP TABLE IF EXISTS COMPANY;
+CREATE TABLE COMPANY (
+    page_id int PRIMARY KEY,
+    work_domain varchar(30),
+    FOREIGN KEY (page_id) REFERENCES PAGE(page_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS BRANCH_COMPANY;
+CREATE TABLE BRANCH_COMPANY (
+    page_id int,
+    branch varchar(50),
+    FOREIGN KEY (page_id) REFERENCES COMPANY(page_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (page_id, branch)
+);
+
+DROP TABLE IF EXISTS BRAND_PRODUCT;
+CREATE TABLE BRAND_PRODUCT (
+    page_id int PRIMARY KEY,
+    website varchar(50),
+    cust_service int(10),
+    FOREIGN KEY (page_id) REFERENCES PAGE(page_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS PUBLIC_FIGURE;
+CREATE TABLE PUBLIC_FIGURE (
+    page_id int PRIMARY KEY,
+    name varchar(50),
+    field varchar(50),
+    FOREIGN KEY (page_id) REFERENCES PAGE(page_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS NEWS_PUB_FIG;
+CREATE TABLE NEWS_PUB_FIG (
+    page_id int ,
+    news varchar(1000),
+    published_time timestamp,
+    FOREIGN KEY (page_id) REFERENCES PUBLIC_FIGURE(page_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (page_id,published_time)
+);
+
+DROP TABLE IF EXISTS ENTERTAINMENT;
+CREATE TABLE ENTERTAINMENT  (
+    page_id int PRIMARY KEY,
+    events varchar(300),
+    audience varchar(300),
+    FOREIGN KEY (page_id) REFERENCES PAGE(page_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS CAUSE_COMMUNITY;
+CREATE TABLE CAUSE_COMMUNITY  (
+    page_id int PRIMARY KEY,
+    goal varchar(300),
+    activities varchar(300),
+    FOREIGN KEY (page_id) REFERENCES PAGE(page_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+DROP TABLE IF EXISTS SOCIAL_MEDIA.GROUP;
+CREATE TABLE SOCIAL_MEDIA.GROUP (
+    group_id int AUTO_INCREMENT PRIMARY KEY,
+    group_name varchar(50) NOT NULL,
+    group_privacy ENUM('Public', 'Private', 'Secret')
+);
