@@ -95,7 +95,7 @@ CREATE TABLE PROD_BP(
     name varchar(50),
     price decimal(10,2),
     FOREIGN KEY (page_id) REFERENCES BUSINESS_PLACE(page_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY(page_id,prod_name,prod_price)
+    PRIMARY KEY(page_id,name,price)
 );
 
 DROP TABLE IF EXISTS COMPANY;
