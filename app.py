@@ -7,6 +7,537 @@ from datetime import datetime
 import time
 import datetime
 
+def search():
+    search_key = input("Enter the keyword to be searched for: ")
+    search_key = search_key+'+'
+    print("Enter the domain you want to search in:")
+    print("1. User")
+    print("2. Post")
+    print("3. Comment")
+    print("4. Page")
+    print("5. Group")
+    try:
+        search_param = int(input("Enter the number of the required domain: "))
+    except Exception as e:
+        print(e)
+        print("Invalid domain type")
+        return
+    if search_param==1:
+        search_type = "USER"
+        search_field = "name"
+    elif search_param==2:
+        search_type = "POST"
+        search_field = "text"
+    elif search_param==3:
+        search_type = "COMMENT"
+        search_field = "text"
+    elif search_param==4:
+        search_type = "PAGE"
+        search_field = "page_name"
+    elif search_param==5:
+        search_type = "social_media.GROUP"
+        search_field = "group_name"
+    
+    try:
+        query = "SELECT * FROM %s WHERE %s REGEXP '%s'" %(search_type,search_field,search_key)
+        r = cur.execute(query)
+        if r==0:
+            print("No result found")
+            return
+        rows = cur.fetchall()
+        viewTable(rows)
+    except Exception as e:
+        print(e)
+        print("Could not perform search")
+
+def generateReport():
+    try:
+        user_id = int(input("Enter the User ID of the user you want to generate the report for: "))
+    except Exception as e:
+        print(e)
+        print("User ID must be a number")
+        return
+    try:
+        
+        query = "SELECT * FROM USER WHERE user_id=%d" %(user_id)
+        r = cur.execute(query)
+        if r==0:
+            print("Could not find details of the given User ID")
+            return
+        print("The details of the user are as follows: ")
+        rows = cur.fetchall()
+        viewTable(rows)
+
+        print("Select which report would you like to say: ")
+        print("1. Followers")
+        print("2. Following")
+        print("3. Post")
+        print("4. Comments")
+        print("5. Post Reacts")
+        print("6. Comment Reacts")
+        print("7. Pages Created")
+        print("8. Pages Liked")
+        print("9. Group Admin")
+        print("10. Group Moderator")
+        print("11. Group Member")
+
+        try:
+            report_type = int(input("Enter the number of the report you would like to see: "))
+        except Exception as e:
+            print(e)
+            print("Invalid Choice")
+            return
+
+        if report_type==1:
+            query = "SELECT * FROM USER WHERE user_id IN (SELECT follower_id FROM FOLLOWS WHERE following_id=%d)" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("There are no followers for the user\n")
+            else:
+                print("The users following the user are as follows: ")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==2:
+            query = "SELECT * FROM USER WHERE user_id IN (SELECT following_id FROM FOLLOWS WHERE follower_id=%d)" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user does not follow anyone \n")
+            else:
+                print("The users the given user is following are as follows: ")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==3:
+            query = "SELECT * FROM POST WHERE user_id=%d" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user did not post any post\n")
+            else:
+                print("Posts posted by the user:")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==4: 
+            query = "SELECT COMMENT.comment_id, COMMENT.text, COMMENT.media, COMMENTS.post_id FROM COMMENT INNER JOIN COMMENTS ON COMMENT.comment_id = COMMENTS.comment_id WHERE COMMENTS.user_id = %d" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user did not post any post\n")
+            else:
+                print("Comments posted by the user:")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==5:
+            query = "SELECT POST.post_id, POST.text, POST.media, POST.user_id, MAKES_GENERAL_REACT.reacted_type FROM POST INNER JOIN MAKES_GENERAL_REACT ON POST.post_id = MAKES_GENERAL_REACT.post_id WHERE MAKES_GENERAL_REACT.user_id = %d" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user did not react on any post\n")
+            else:
+                print("Posts reacted on by the user:")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==6:   
+            query = "SELECT COMMENT.comment_id, COMMENT.text, COMMENT.media, COMMENTS.post_id, MAKES_A_REACT.reacted_type FROM COMMENT INNER JOIN COMMENTS ON COMMENT.comment_id = COMMENTS.comment_id INNER JOIN MAKES_A_REACT ON MAKES_A_REACT.comment_id = COMMENT.comment_id WHERE MAKES_A_REACT.comment_id=%d" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user did not react on any comment\n")
+            else:
+                print("Comments reacted on by the user: ")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==7:
+            query = "SELECT * FROM PAGE WHERE owner_id = %d" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user did not create any page\n")
+            else:
+                print("Pages created by the user: ")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==8:
+            query = "SELECT * FROM PAGE WHERE page_id IN (SELECT page_id FROM LIKES WHERE user_id=%d)" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user did not like any page\n")
+            else:
+                print("Pages liked by the user: ")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==9:
+            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM IS_ADMIN WHERE user_id=%d)" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user is not the admin of any group\n")
+            else:
+                print("Groups the user is the admin of: ")
+                rows = cur.fetchall()
+                viewTable(rows)
+        
+        elif report_type==10:
+            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM IS_MODERATOR WHERE user_id=%d)" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user is not the moderator of any group\n")
+            else:
+                print("Groups the user is the moderator of: ")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+        elif report_type==11:
+            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM BELONGS_TO WHERE user_id=%d)" %(user_id)
+            r = cur.execute(query)
+            if r==0:
+                print("The user is does not belong to any group\n")
+            else:
+                print("Groups the user is the belongs to: ")
+                rows = cur.fetchall()
+                viewTable(rows)
+
+    except Exception as e:
+        print(e)
+        print("Could not generate report :(")
+
+###############################################################################################
+##############################################################################################
+def mutual():
+    try:
+
+        print("1. Mutual Followings")
+        print("2. Mutual Followers")
+        print("3. Mutual Liked Pages")
+        print("4. Mutual Membership in Groups")
+
+        optn = int(input("Enter chosen option: "))
+
+        user1ID = int(input("Enter UserID of first User: "))
+        user2ID = int(input("Enter UserID of second User: "))
+
+        if (optn == 1):
+            query = '''
+                    SELECT *
+                    FROM USER
+                    WHERE user_id IN
+                                (SELECT following_id
+                                FROM FOLLOWS
+                                WHERE follower_id = '%s')
+
+                                AND
+
+                        user_id IN
+                                (SELECT following_id
+                                FROM FOLLOWS
+                                WHERE follower_id = '%s')
+                    ''' %(user1ID, user2ID)
+
+            r = cur.execute(query)
+            print("Mutual Followers:")
+            if(r==0):
+                print("NO MUTUAL FOLLOWERS")
+            rows = cur.fetchall()
+            viewTable(rows)
+
+        elif (optn == 2):
+            query = '''
+                    SELECT *
+                    FROM USER
+                    WHERE user_id IN
+                                (SELECT follower_id
+                                FROM FOLLOWS
+                                WHERE following_id = '%s')
+
+                                AND
+                        user_id IN
+                                (SELECT follower_id
+                                FROM FOLLOWS
+                                WHERE following_id = '%s')
+                    ''' %(user1ID, user2ID)
+
+            r = cur.execute(query)
+            print("Mutual Followings:")
+            if(r==0):
+                print("NO MUTUAL FOLLOWINGS")
+            rows = cur.fetchall()
+            viewTable(rows)
+
+        elif (optn == 3):
+            query = '''
+                    SELECT *
+                    FROM PAGE
+                    WHERE page_id IN
+                                (SELECT page_id
+                                FROM LIKES
+                                WHERE  user_id = '%s')
+
+                                AND
+                        page_id IN
+                                (SELECT page_id
+                                FROM LIKES
+                                WHERE user_id = '%s')
+                    ''' %(user1ID, user2ID)
+
+            r = cur.execute(query)
+            print("Mutual Likes to Pages:")
+            if(r==0):
+                print("NO MUTUAL LIKES")
+            rows = cur.fetchall()
+            viewTable(rows)
+
+        elif(optn == 4):
+            query = '''
+                    SELECT *
+                    FROM social_media.GROUP
+                    WHERE group_id IN
+                                (SELECT group_id
+                                FROM BELONGS_TO
+                                WHERE  user_id = '%s')
+
+                                AND
+                        group_id IN
+                                (SELECT group_id
+                                FROM BELONGS_TO
+                                WHERE user_id = '%s')
+                    ''' %(user1ID, user2ID)
+
+            r = cur.execute(query)
+            print("Mutual Likes to Pages:")
+            if(r==0):
+                print("NO MUTUAL LIKES")
+            rows = cur.fetchall()
+            viewTable(rows)
+
+        else:
+            print("Invalid Option")
+
+    except Exception as e:
+        print(e)
+        print("ERROR")
+        return
+
+
+def eventTracker():
+    try:
+        uid = int(input("Enter the UserID for the User you want to check the events for: "))
+        date = input("Enter the date for the event tracking in MM-DD format: ")
+        querybirthday = '''
+                        SELECT * FROM USER WHERE user_id IN
+                        (SELECT user_id FROM PROFILE WHERE user_id IN
+                            (SELECT following_id FROM FOLLOWS WHERE follower_id = '%d')
+                        AND
+                        (date_of_birth REGEXP '%s'));
+                        '''%(uid, date+'+')
+
+        queryposts = '''
+                        SELECT * FROM POST WHERE time REGEXP '%s' AND user_id = '%s';
+                     ''' %(date+'+',uid)
+
+
+        r1 = cur.execute(querybirthday)
+        print("Birthdays ->")
+        if(r1==0):
+            print("No Birthdays")
+        else:
+            rows = cur.fetchall()
+            viewTable(rows)
+
+        r1 = cur.execute(queryposts)
+        print("Posts made on this day ->")
+        if(r1==0):
+            print("No Posts")
+        else :
+            rows = cur.fetchall()
+            viewTable(rows)
+
+    except Exception as e:
+        print (e)
+        print("ERROR")
+        return
+
+
+def listReacttoPost():
+    try:
+        post_id=int(input("Choose the PostID you want to see the reacts for: "))
+        queryposts = '''
+                        SELECT USER.user_id,USER.name,MAKES_GENERAL_REACT.reacted_type FROM (MAKES_GENERAL_REACT INNER JOIN USER ON MAKES_GENERAL_REACT.user_id = USER.user_id ) WHERE MAKES_GENERAL_REACT.post_id = '%d';
+                     ''' %(post_id)
+
+        r1 = cur.execute(queryposts)
+        print("Reacts to the post ->")
+        if(r1==0):
+            print("No reacts yet")
+        else:
+            rows = cur.fetchall()
+            viewTable(rows)
+    except Exception as e:
+        print(e)
+        print("ERROR")
+        return
+    return
+
+def listReacttoComment():
+    try:
+        comment_id=int(input("Choose the CommentID you want to see the reacts for: "))
+        query = '''
+                        SELECT USER.user_id,USER.name,MAKES_A_REACT.reacted_type FROM (MAKES_A_REACT INNER JOIN USER ON MAKES_A_REACT.user_id = USER.user_id ) WHERE MAKES_A_REACT.comment_id = '%d';
+                     ''' %(comment_id)
+
+        r1 = cur.execute(query)
+        print("Reacts to the Comment ->")
+        if(r1==0):
+            print("No reacts yet")
+        else:
+            rows = cur.fetchall()
+            viewTable(rows)
+    except Exception as e:
+        print(e)
+        print("ERROR")
+        return
+    return
+
+def listCommenttoPost():
+    try:
+        post_id=int(input("Choose the PostID you want to see the comments for: "))
+        query = '''
+                        SELECT USER.user_id,USER.name,COMMENTS.comment_id,COMMENT.text,COMMENT.time FROM COMMENTS INNER JOIN USER ON COMMENTS.user_id = USER.user_id INNER JOIN COMMENT ON COMMENTS.comment_id = COMMENT.comment_id  WHERE COMMENTS.post_id = '%d';
+                     ''' %(post_id)
+
+        r1 = cur.execute(query)
+        print("Comments to the Post ->")
+        if(r1==0):
+            print("No reacts yet")
+        else:
+            rows = cur.fetchall()
+            viewTable(rows)
+    except Exception as e:
+        print(e)
+        print("ERROR")
+        return
+    return
+
+def postListing():
+    try:
+        print("Choose the option to see suggestions for: ")
+        print("1. List all comments to a specific Post")
+        print("2. List all Reacts to a specific Post")
+
+        optn = int(input("Enter the choice: "))
+
+        if(optn == 1):
+            listCommenttoPost()
+        elif(optn == 2):
+            listReacttoPost()
+        else :
+            print("Invalid Option")
+        return
+    except Exception as e:
+        print(e)
+        print("ERROR")
+        return
+
+def commentListing():
+    try:
+        print("Choose the option to see suggestions for: ")
+        print("1. List all Reacts to a specific Comment")
+
+        optn = int(input("Enter the choice: "))
+
+        if(optn == 1):
+            listReacttoComment()
+        else :
+            print("Invalid Option")
+        return
+    except Exception as e:
+        print(e)
+        print("ERROR")
+        return
+
+def showSuggestions():
+    print("Choose the option to see suggestions for: ")
+    print("1. User")
+    print("2. Page")
+    print("3. Group")
+    try:
+        optn = int(input("Enter option : "))
+        if (optn == 1):
+            user_id=int(input("Enter the User ID you want to see the FOLLOWING suggestions for : "))
+            query = '''
+                        SELECT * FROM USER WHERE user_id IN (
+                            SELECT following_id FROM FOLLOWS WHERE follower_id IN (
+                            SELECT following_id FROM FOLLOWS WHERE follower_id = '%d'
+                            )
+                            )
+                            AND user_id NOT IN (
+                                SELECT following_id FROM FOLLOWS WHERE follower_id = '%d'
+                            )
+                            AND user_id <> '%d';
+
+                        ''' %(user_id,user_id,user_id)
+
+            r1 = cur.execute(query)
+            print("Suggestions ->")
+            if(r1==0):
+                print("No suggestion to show")
+            else:
+                rows = cur.fetchall()
+                viewTable(rows)
+            return
+        elif (optn == 2):
+            user_id=int(input("Enter the User ID you want to see the PAGES suggestions for : "))
+            query = '''
+                    SELECT * FROM PAGE WHERE page_id IN (
+                        SELECT page_id FROM LIKES WHERE user_id IN (
+                           SELECT following_id FROM FOLLOWS WHERE follower_id = '%d'
+                        )
+                        )
+                        AND page_id NOT IN (
+                            SELECT page_id FROM LIKES WHERE user_id = '%d'
+                        )
+                     ''' %(user_id,user_id)
+
+            r1 = cur.execute(query)
+            print("Suggestions ->")
+            if(r1==0):
+                print("No suggestion to show")
+            else:
+                rows = cur.fetchall()
+                viewTable(rows)
+            return
+        elif (optn == 3):
+            user_id=int(input("Enter the User ID you want to see the GROUPS suggestions for : "))
+            query = '''
+                        SELECT * FROM social_media.GROUP WHERE group_id IN (
+                            SELECT group_id FROM BELONGS_TO WHERE user_id IN (
+                            SELECT following_id FROM FOLLOWS WHERE follower_id = '%d'
+                            )
+                            )
+                            AND group_id NOT IN (
+                                SELECT group_id FROM BELONGS_TO WHERE user_id = '%d'
+                            )
+                    ''' %(user_id,user_id)
+
+            r1 = cur.execute(query)
+            print("Suggestions ->")
+            if(r1==0):
+                print("No suggestion to show")
+            else:
+                rows = cur.fetchall()
+                viewTable(rows)
+            return
+        else:
+            print("Invalid Options")
+        return
+    except Exception as e:
+        print(e)
+        print("ERROR")
+        return
+
+
+###############################################################################################
+##############################################################################################
 
 def checkIsMemberOfGroup(user_id, group_id):
     global cur
@@ -99,7 +630,7 @@ def viewOptions():
     #Pages
     print("7.  PAGES")
     print("8.  PAGES OF BUSINESS_PLACE")
-    print("9. PRODUCTS OF BRANDS AND DETAILS")
+    print("9.  PRODUCTS OF BRANDS AND DETAILS")
     print("10. PAGES OF COMPANIES")
     print("11. BRANCHES OF COMPANIES")
     print("12. PAGES OF BRAND PRODUCTS")
@@ -141,7 +672,7 @@ def viewOptions():
         query = "SELECT * FROM EDUCATION;"
     # Pages and subclasses
     elif choice == '7':
-        query = "SELECT * FROM PAGE;"
+        query = "SELECT PAGE.page_id, PAGE.page_name, PAGE.owner_id, COUNT(LIKES.user_id) AS Number_of_Likes FROM PAGE LEFT OUTER JOIN LIKES ON PAGE.page_id = LIKES.page_id GROUP BY page_id"
     elif choice == '8':
         query = "SELECT * FROM BUSINESS_PLACE;"
     elif choice == '9':
@@ -162,7 +693,7 @@ def viewOptions():
         query = "SELECT * FROM CAUSE_COMMUNITY"
     # Pages over
     elif choice == '17':
-        query = "SELECT * FROM social_media.GROUP"
+        query = "SELECT social_media.GROUP.group_id, social_media.GROUP.group_name, social_media.GROUP.group_privacy, COUNT(BELONGS_TO.user_id) AS Number_of_Members FROM social_media.GROUP INNER JOIN BELONGS_TO ON social_media.GROUP.group_id = BELONGS_TO.group_id GROUP BY group_id"
     # Relationships
     elif choice == '18':
         query = "SELECT * FROM COMMENTS;"
@@ -1162,64 +1693,68 @@ def viewTableDel(choice):
 
 
 def delOptions():
-    print("Select from the options below :")
-    print("1. Deactivate Account")
-    print("2. Unfollow")
-    print("3. Delete Post")
-    print("4. Delete Comment")
-    print("5. Delete Message")
-    print("6. Delete Story")
-    print("7. Remove react from a  Post")
-    print("8. Remove react from a Comment")
-    print("9. Remove response from a Story")
-    print("10. Unlike a liked page")
-    print("11. Exit group")
-    print("12. Quit being Admin")
-    print("13. Quit being Moderator")
-    print("14. Remove Tag")
-    print("15. Remove Mention")
+    while(1):
+        print("Select from the options below :")
+        print("1. Deactivate Account")
+        print("2. Unfollow")
+        print("3. Delete Post")
+        print("4. Delete Comment")
+        print("5. Delete Message")
+        print("6. Delete Story")
+        print("7. Remove react from a  Post")
+        print("8. Remove react from a Comment")
+        print("9. Remove response from a Story")
+        print("10. Unlike a liked page")
+        print("11. Exit group")
+        print("12. Quit being Admin")
+        print("13. Quit being Moderator")
+        print("14. Remove Tag")
+        print("15. Remove Mention")
+        print("42. Go Back")
 
-    optn = input("Your option is : ")
+        optn = input("Your option is : ")
 
-    try:
-        optn = int(optn)
-    except Exception as e:
-        print(e)
+        try:
+            optn = int(optn)
+        except Exception as e:
+            print(e)
+            return
+
+        if optn==1 :
+            delUser()
+        elif optn==2:
+            unFollow()
+        elif optn==3:
+            delPost()
+        elif optn==4:
+            delComment()
+        elif optn==5:
+            delMessage()
+        elif optn==6:
+            delStory()
+        elif optn==7:
+            generalUnreact()
+        elif optn==8:
+            unReact()
+        elif optn==9:
+            unRespond()
+        elif optn==10:
+            unLike()
+        elif optn==11:
+            exitGroup()
+        elif optn==12:
+            unAdmin()
+        elif optn==13:
+            unModerator()
+        elif optn==14:
+            unTag()
+        elif optn==15:
+            unMention()
+        elif optn==42:
+            return
+        else:
+            print("Oops! Choose an option between 1 to 15")
         return
-
-    if optn==1 :
-        delUser()
-    elif optn==2:
-        unFollow()
-    elif optn==3:
-        delPost()
-    elif optn==4:
-        delComment()
-    elif optn==5:
-        delMessage()
-    elif optn==6:
-        delStory()
-    elif optn==7:
-        generalUnreact()
-    elif optn==8:
-        unReact()
-    elif optn==9:
-        unRespond()
-    elif optn==10:
-        unLike()
-    elif optn==11:
-        exitGroup()
-    elif optn==12:
-        unAdmin()
-    elif optn==13:
-        unModerator()
-    elif optn==14:
-        unTag()
-    elif optn==15:
-        unMention()
-    else:
-        print("Oops! Choose an option between 1 to 15")
-    return
 
 ################# Entities ###################
 def delUser():
@@ -1989,50 +2524,54 @@ def updatePassword():
 
 
 def updOptions():
-    print("Select from the options below :")
-    print("1. Edit Post")
-    print("2. Edit Comment")
-    print("3. Edit Story")
-    print("4. Edit Page")
-    print("5. Change the react to a Post")
-    print("6. Change react to Comment")
-    print("7. Change react to a Story")
-    print("8. Edit Group Info")
-    print("9. Edit Profile ")
-    print("10. Update Password")
+    while(1):
+        print("Select from the options below :")
+        print("1. Edit Post")
+        print("2. Edit Comment")
+        print("3. Edit Story")
+        print("4. Edit Page")
+        print("5. Change the react to a Post")
+        print("6. Change react to Comment")
+        print("7. Change react to a Story")
+        print("8. Edit Group Info")
+        print("9. Edit Profile ")
+        print("10. Update Password")
+        print("42. Go Back")
 
 
-    optn = input("Your option is : ")
+        optn = input("Your option is : ")
 
-    try:
-        optn = int(optn)
-    except Exception as e:
-        print(e)
+        try:
+            optn = int(optn)
+        except Exception as e:
+            print(e)
+            return
+
+        if optn==1 :
+            updatePost()
+        elif optn==2:
+            updateComment()
+        elif optn==3:
+            updateStory()
+        elif optn==4:
+            updatePage()
+        elif optn==5:
+            updateGeneralReact()
+        elif optn==6:
+            updateMakesReact()
+        elif optn==7:
+            updateResponds()
+        elif optn==8:
+            updateGroup()
+        elif optn==9:
+            updateProfile()
+        elif optn==10:
+            updatePassword()
+        elif optn==42:
+            return
+        else:
+            print("Oops! Choose an option between 1 to 9")
         return
-
-    if optn==1 :
-        updatePost()
-    elif optn==2:
-        updateComment()
-    elif optn==3:
-        updateStory()
-    elif optn==4:
-        updatePage()
-    elif optn==5:
-        updateGeneralReact()
-    elif optn==6:
-        updateMakesReact()
-    elif optn==7:
-        updateResponds()
-    elif optn==8:
-        updateGroup()
-    elif optn==9:
-        updateProfile()
-    elif optn==10:
-        updatePassword()
-    else:
-        print("Oops! Choose an option between 1 to 9")
-    return
 
 ###############################################################################################
 
@@ -2050,7 +2589,7 @@ while(1):
     # password = input("Password: ")
 
     username = 'root'
-    password = 'blahblah'
+    password = 'pavani@17'
 
     try:
         con = pymysql.connect(host='127.0.0.1',
@@ -2079,21 +2618,35 @@ while(1):
             tmp = sp.call('clear', shell=True)
             refreshDatabase()
             print("CHOOSE AN OPTION\n")
-            print("1.View Options")
+            print("1.General View Options")
             print("2.Insertion Options")
             print("3.Deletion Options")
             print("4.Modify Options")
-            print("5.Quit")
+            print("5.Search")
+            print("6.User-specific View Options and Activity Report Generation")
+            print("7.Show Suggestions")
+            print("8.View Mutual Relationships")
+            print("9.Post-specific View Options")
+            print("10.Comment-specific View Options")
+            print("11.Quit")
             inp = input("\nENTER: ")
             if(inp == '1'):
                 viewOptions()
             elif(inp == '2'):
                 insertionOptions()
-            elif(inp == '3'):
-                delOptions()
-            elif(inp == '4'):
-                updOptions()
-            elif(inp == '5'):
+            elif(inp=='5'):
+                search()
+            elif(inp=='6'):
+                generateReport()
+            elif(inp == '7'):
+                showSuggestions()
+            elif(inp == '8'):
+                mutual()
+            elif(inp=='9'):
+                postListing()
+            elif(inp=='10'):
+                commentListing()
+            elif(inp == '11'):
                 exitflag = 1
                 print("Exiting.")
                 break
