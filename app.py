@@ -66,7 +66,7 @@ def isNonEmptyQuery(query):
     except Exception as e:
         con.rollback()
         return False
-    
+
 
 def viewTable(rows):
 
@@ -74,7 +74,7 @@ def viewTable(rows):
     try:
         a.append(list(rows[0].keys()))
     except:
-        print("\n-----------------\nEMPTY TABLE\n-----------------\n")   
+        print("\n-----------------\nEMPTY TABLE\n-----------------\n")
         return
     for row in rows:
         b = []
@@ -158,7 +158,7 @@ def viewOptions():
         query = "SELECT * FROM NEWS_PUB_FIG;"
     elif choice == '15':
         query = "SELECT * FROM ENTERTAINMENT"
-    elif choice == '16':    
+    elif choice == '16':
         query = "SELECT * FROM CAUSE_COMMUNITY"
     # Pages over
     elif choice == '17':
@@ -702,7 +702,7 @@ def makeReactionToAComment():
     else :
         print("Invalid react Type")
         return
-    
+
     try:
         query = "INSERT INTO MAKES_A_REACT(comment_id, user_id, reacted_type) VALUES(%s, %s, '%s');" % (
             row["comment_id"], row["user_id"],row["reactedType"])
@@ -1018,7 +1018,7 @@ def showPageOptions():
         tmp = sp.call('clear', shell=True)
         refreshDatabase()
         print("Choose an option from below: ")
-        print("1. Like a page.") 
+        print("1. Like a page.")
         print("2. Create a new page.")
         print("3. Make a page for brand product.")
         print("4. Make a page for business place.")
@@ -1096,11 +1096,945 @@ def insertionOptions():
         input("Press enter to Continue.")
 
 
+###################################################################################################
+###############################################  DELETE ##########################################
+
+def viewTableDel(choice):
+    if choice == '1':
+        query = "SELECT * FROM USER;"
+    elif choice == '2':
+        query = "SELECT * FROM POST;"
+    elif choice == '3':
+        query = "SELECT * FROM STORIES;"
+    elif choice == '4':
+        query = "SELECT * FROM MESSAGE;"
+    elif choice == '5':
+        query = "SELECT * FROM PROFILE;"
+    elif choice == '6':
+        query = "SELECT * FROM EDUCATION;"
+    elif choice == '18':
+        query = "SELECT * FROM COMMENT;"
+    # Pages and subclasses
+    elif choice == '7':
+        query = "SELECT * FROM PAGE;"
+    elif choice == '17':
+        query = "SELECT * FROM social_media.GROUP"
+    # Relationships
+    elif choice == '19':
+        query = "SELECT * FROM FOLLOWS;"
+    elif choice == '20':
+        query = "SELECT * FROM MAKES_GENERAL_REACT;"
+    elif choice == '21':
+        query = "SELECT * FROM LIKES"
+    elif choice == '22':
+        query = "SELECT * FROM BELONGS_TO"
+    elif choice == '23':
+        query = "SELECT * FROM IS_ADMIN"
+    elif choice == '24':
+        query = "SELECT * FROM IS_MODERATOR"
+    elif choice == '25':
+        query = "SELECT * FROM MAKES_A_REACT;"
+    elif choice == '26':
+        query = "SELECT * FROM MENTIONS;"
+    elif choice == '27':
+        query = "SELECT * FROM SENDS_SPECIFIC;"
+    elif choice == '28':
+        query = "SELECT * FROM SENDS_GENERAL"
+    elif choice == '29':
+        query = "SELECT * FROM RESPONDS"
+    elif choice == '30':
+        query = "SELECT * FROM SHARES"
+    elif choice == '31':
+        query = "SELECT * FROM IS_TAGGED;"
+
+    try:
+        no_of_rows = cur.execute(query)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+
+    rows = cur.fetchall()
+    viewTable(rows)
+    con.commit()
+    return
 
 
 
+def delOptions():
+    print("Select from the options below :")
+    print("1. Deactivate Account")
+    print("2. Unfollow")
+    print("3. Delete Post")
+    print("4. Delete Comment")
+    print("5. Delete Message")
+    print("6. Delete Story")
+    print("7. Remove react from a  Post")
+    print("8. Remove react from a Comment")
+    print("9. Remove response from a Story")
+    print("10. Unlike a liked page")
+    print("11. Exit group")
+    print("12. Quit being Admin")
+    print("13. Quit being Moderator")
+    print("14. Remove Tag")
+    print("15. Remove Mention")
+
+    optn = input("Your option is : ")
+
+    try:
+        optn = int(optn)
+    except Exception as e:
+        print(e)
+        return
+
+    if optn==1 :
+        delUser()
+    elif optn==2:
+        unFollow()
+    elif optn==3:
+        delPost()
+    elif optn==4:
+        delComment()
+    elif optn==5:
+        delMessage()
+    elif optn==6:
+        delStory()
+    elif optn==7:
+        generalUnreact()
+    elif optn==8:
+        unReact()
+    elif optn==9:
+        unRespond()
+    elif optn==10:
+        unLike()
+    elif optn==11:
+        exitGroup()
+    elif optn==12:
+        unAdmin()
+    elif optn==13:
+        unModerator()
+    elif optn==14:
+        unTag()
+    elif optn==15:
+        unMention()
+    else:
+        print("Oops! Choose an option between 1 to 15")
+    return
+
+################# Entities ###################
+def delUser():
+    global cur
+    viewTableDel('1')
+    user_id = input("Enter the User ID of the User to be removed: ")
+    try :
+        user_id = int(user_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+
+    query1 = "DELETE FROM USER WHERE user_id='%d';" % (user_id)
+    query2 = "DELETE FROM PROFILE WHERE user_id='%d';" % (user_id)
+    try:
+        cur.execute(query1)
+        cur.execute(query2)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('1')
+    return
+
+def delComment():
+    global cur
+    viewTableDel('18')
+    comment_id = input("Enter the Comment ID of the Comment to be removed: ")
+    try :
+        comment_id = int(comment_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+
+    query = "DELETE FROM COMMENT WHERE comment_id='%d';" % (comment_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('18')
+    return
+
+def delPost():
+    global cur
+    viewTableDel('2')
+    post_id = input("Enter the Post ID of the Post you to be removed: ")
+    try :
+        post_id = int(post_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+
+    query = "DELETE FROM POST WHERE post_id='%d';" % (post_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('2')
+    return
+
+def delMessage():
+    global cur
+    viewTableDel('4')
+    message_id = input("Enter the Message ID of the Message to be removed: ")
+    try :
+        message_id = int(message_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+
+    query = "DELETE FROM MESSAGE WHERE message_id='%d';" % (message_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('4')
+    return
+
+def delStory():
+    global cur
+    viewTableDel('3')
+    story_id = input("Enter the Story ID of the Story to be removed: ")
+    try :
+        story_id = int(story_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+
+    query = "DELETE FROM STORIES WHERE story_id='%d';" % (story_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('3')
+    return
+
+def delPage():
+    global cur
+    viewTableDel('7')
+    page_id = input("Enter the Page ID of the Page to be removed: ")
+    try :
+        page_id = int(page_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+
+    query = "DELETE FROM PAGE WHERE page_id='%d';" % (page_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('7')
+    return
 
 
+############### Relationships #################
+
+def unFollow():
+    global cur
+    viewTableDel('19')
+    follower_id = input("Enter the Follower's User Id: ")
+    following_id = input("Enter the User ID of the user to be unfollowed: ")
+    try :
+        follower_id = int(follower_id)
+        following_id = int(following_id)
+    except :
+        print("Invalid Page ID")
+        print("\n\nError!\n")
+        return
+
+    query = "DELETE FROM FOLLOWS WHERE follower_id='%d' AND following_id = %d;" % (follower_id,following_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('19')
+    return
+
+def generalUnreact():
+    global cur
+    viewTableDel('20')
+    user_id = input("Enter the Reacting User Id: ")
+    post_id = input("Enter the Post ID of the Post to be unreacted: ")
+    try :
+        user_id = int(user_id)
+        post_id = int(post_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+
+    query = "DELETE FROM MAKES_GENERAL_REACT WHERE user_id='%d' AND post_id = %d;" % (user_id,post_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('20')
+    return
+
+def unLike():
+    global cur
+    viewTableDel('21')
+    user_id = input("Enter the User Id of the User who wants to unlike: ")
+    page_id = input("Enter the Page ID of the Page to be unliked: ")
+    try :
+        user_id = int(user_id)
+        page_id = int(page_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    query = "DELETE FROM FOLLOWS LIKES WHERE user_id='%d' AND page_id = %d;" % (user_id,page_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('21')
+    return
+
+def exitGroup():
+    global cur
+    viewTableDel('22')
+    user_id = input("Enter the User ID of the User who wants to exit: ")
+    group_id = input("Enter the Group ID of the Group: ")
+    try :
+        user_id = int(user_id)
+        group_id = int(group_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    query1 = "DELETE FROM BELONGS_TO WHERE user_id='%d' AND group_id = %d;" % (user_id,group_id)
+    query2 = "DELETE FROM IS_ADMIN WHERE user_id='%d' AND group_id = %d;" % (user_id,group_id)
+    query3 = "DELETE FROM IS_MODERATOR WHERE user_id='%d' AND group_id = %d;" % (user_id,group_id)
+    try:
+        cur.execute(query1)
+        cur.execute(query2)
+        cur.execute(query3)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('22')
+    return
+
+def unAdmin():
+    global cur
+    viewTableDel('23')
+    user_id = input("Enter the User ID of the User to be removed from Admin: ")
+    group_id = input("Enter the Group ID of the Group: ")
+    try :
+        user_id = int(user_id)
+        group_id = int(group_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    query = "DELETE FROM IS_ADMIN WHERE (user_id='%d') AND (group_id = %d);" % (user_id,group_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('23')
+    return
+
+
+def unModerator():
+    global cur
+    viewTableDel('24')
+    user_id = input("Enter the User ID of the User to be removed from moderator: ")
+    group_id = input("Enter the Group ID of the Group: ")
+    try :
+        user_id = int(user_id)
+        group_id = int(group_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    query = "DELETE FROM IS_MODERATOR WHERE user_id='%d' AND group_id = %d;" % (user_id,group_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('24')
+    return
+
+def unReact():
+    global cur
+    viewTableDel('25')
+    user_id = input("Enter the Reacting User Id: ")
+    comment_id = input("Enter the Comment ID of the Comment to be unreacted: ")
+    try :
+        user_id = int(user_id)
+        comment_id = int(comment_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    query = "DELETE FROM MAKES_A_REACT WHERE user_id='%d' AND comment_id = %d;" % (user_id,comment_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('25')
+    return
+
+def unMention():
+    global cur
+    viewTableDel('26')
+    comment_id = input("Enter the Comment ID to be unmentioned from: ")
+    mentionee_id = input("Enter the User ID to be unmentioned: ")
+    try :
+        comment_id = int(comment_id)
+        mentionee_id = int(mentionee_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    query = "DELETE FROM MENTIONS WHERE comment_id='%d' AND mentionee_id = %d;" % (comment_id,mentionee_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('26')
+    return
+
+
+def unRespond():
+    global cur
+    viewTableDel('29')
+    story_id = input("Enter the Story ID to unreact: ")
+    reacter_id = input("Enter the User ID of the User unreacting: ")
+    try :
+        story_id = int(story_id)
+        reacter_id = int(reacter_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    query = "DELETE FROM RESPONDS WHERE story_id='%d' AND reacter_id = %d;" % (story_id,reacter_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('29')
+    return
+
+def unTag():
+    global cur
+    viewTableDel('31')
+    post_id = input("Enter the Post ID to be untagged from: ")
+    user_id = input("Enter the User ID to be untagged: ")
+    try :
+        post_id = int(post_id)
+        user_id = int(user_id)
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    query = "DELETE FROM IS_TAGGED WHERE user_id='%d' AND post_id = %d;" % (user_id,post_id)
+    try:
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("\n\nError!\n")
+        return
+    viewTableDel('31')
+    return
+
+###############################################################################################
+###############################################################################################
+######################################### MODIFY ##############################################
+
+def updatePost():
+    viewTableDel('2')
+    global cur
+    post = {}
+    try:
+        post["post_id"] = int(input("Enter the post id to be updated:"))
+    except Exception as e:
+        print(e)
+        print("Post ID must be an integer")
+        return
+
+    post["media"] = input("Enter the updated media: ")
+    post["text"] = input("Enter the updated text: ")
+
+    try:
+        query = "UPDATE POST SET media='%s', text='%s' WHERE post_id='%d'" %(post["media"],post["text"],post["post_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data :(")
+        return
+
+    viewTableDel('2')
+    return
+
+def updateComment():
+    viewTableDel('18')
+    global cur
+    comment = {}
+    try:
+        comment["comment_id"] = int(input("Enter the comment id of the comment to be updated: "))
+    except Exception as e:
+        print(e)
+        print("Comment ID must be an integer")
+        return
+
+    comment["text"] = input("Enter the updated text of the comment: ")
+
+    try:
+        query = "UPDATE COMMENT SET text='%s' WHERE comment_id='%d'" %(comment["text"],comment["comment_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data :(")
+        return
+
+    viewTableDel('18')
+    return
+
+def updateStory():
+    viewTableDel('3')
+    global cur
+    story = {}
+
+    try:
+        story["story_id"] = int(input("Enter the story id of the story to be updated: "))
+    except Exception as e:
+        print(e)
+        print("Story ID must be an integer")
+        return
+
+    story["text"] = input("Enter the updated text of the story: ")
+    story["media"] =input("Enter the updated media of the story: ")
+
+    try:
+        query = "UPDATE STORIES SET text='%s', media='%s' WHERE story_id = '%d'" %(story["text"], story["media"], story["story_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data :(")
+        return
+
+    viewTableDel('3')
+    return
+
+def updatePage():
+    viewTableDel('7')
+    global cur
+    page = {}
+
+    try:
+        page["page_id"] = int(input("Enter the page_id of the page to be updated: "))
+    except Exception as e:
+        print(e)
+        print("Page ID must be an integer: ")
+        return
+
+    page["page_name"] = input("Enter the updated name of the page: ")
+
+    try:
+        query = "UPDATE PAGE SET page_name='%s' WHERE page_id='%s'" %(page["page_name"],page["page_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data :(")
+        return
+
+    viewTableDel('7')
+    return
+
+def updateGeneralReact():
+    viewTableDel('20')
+    global cur
+    react = {}
+
+    try:
+        react["post_id"] = int(input("Enter the post ID of the post you want to update the react on: "))
+        react["user_id"] = int(input("Enter the user ID of the User whose react you want to change: "))
+    except Exception as e:
+        print(e)
+        print("Wrong parameters. Try again")
+        return
+
+    print("Choose the react type by pressing the corresponding number")
+    print("1 . Like")
+    print("2 . Dislike")
+    print("3 . Wow")
+    print("4 . Heart")
+    print("5 . Angry")
+    print("6 . Haha")
+    try:
+        reactNum = int(input())
+    except:
+        print("Invalid react Type")
+        return
+
+    if reactNum == 1:
+        react["reactedType"]="Like"
+    elif reactNum == 2:
+        react["reactedType"]="Dislike"
+    elif reactNum == 3:
+        react["reactedType"]="Wow"
+    elif reactNum == 4:
+        react["reactedType"]="Heart"
+    elif reactNum == 5:
+        react["reactedType"]="Angry"
+    elif reactNum == 6:
+        react["reactedType"]="Haha"
+    else :
+        print("Invalid react Type")
+        return
+
+    try:
+        query = "UPDATE MAKES_GENERAL_REACT SET reacted_type='%s' WHERE post_id = '%d' AND user_id='%d'" %(react["reactedType"], react["post_id"], react["user_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data :(")
+        return
+
+    viewTableDel('20')
+    return
+
+def updateMakesReact():
+    viewTableDel('25')
+    global cur
+    react = {}
+
+    try:
+        react["comment_id"] = int(input("Enter the comment ID of the comment you want to update the react on: "))
+        react["user_id"] = int(input("Enter the user ID of the user whose react on the comment you want to update: "))
+    except Exception as e:
+        print(e)
+        print("Wrong parameters. Try again")
+        return
+
+    print("Choose the react type by pressing the corresponding number: ")
+    print("1 . Like")
+    print("2 . Dislike")
+    print("3 . Wow")
+    print("4 . Heart")
+    print("5 . Angry")
+    print("6 . Haha")
+    try:
+        reactNum = int(input())
+    except:
+        print("Invalid react Type")
+        return
+
+    if reactNum == 1:
+        react["reactedType"]="Like"
+    elif reactNum == 2:
+        react["reactedType"]="Dislike"
+    elif reactNum == 3:
+        react["reactedType"]="Wow"
+    elif reactNum == 4:
+        react["reactedType"]="Heart"
+    elif reactNum == 5:
+        react["reactedType"]="Angry"
+    elif reactNum == 6:
+        react["reactedType"]="Haha"
+    else :
+        print("Invalid react Type")
+        return
+
+    try:
+        query = "UPDATE MAKES_A_REACT SET reacted_type='%s' WHERE comment_id = '%d' AND user_id='%d'" %(react["reactedType"], react["comment_id"], react["user_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data :(")
+        return
+
+    viewTableDel('25')
+    return
+
+def updateResponds():
+    viewTableDel('29')
+    global cur
+    react = {}
+
+    try:
+        react["story_id"] = int(input("Enter the Story ID of the Story you want to update the react on: "))
+        react["reacter_id"] = int(input("Enter the user ID of the User whose react on the story you want to update: "))
+    except Exception as e:
+        print(e)
+        print("Wrong parameters. Try again")
+        return
+
+    print("Choose the react type by pressing the corresponding number: ")
+    print("1 . Like")
+    print("2 . Dislike")
+    print("3 . Wow")
+    print("4 . Heart")
+    print("5 . Angry")
+    print("6 . Haha")
+    try:
+        reactNum = int(input())
+    except:
+        print("Invalid react Type")
+        return
+
+    if reactNum == 1:
+        react["reactedType"]="Like"
+    elif reactNum == 2:
+        react["reactedType"]="Dislike"
+    elif reactNum == 3:
+        react["reactedType"]="Wow"
+    elif reactNum == 4:
+        react["reactedType"]="Heart"
+    elif reactNum == 5:
+        react["reactedType"]="Angry"
+    elif reactNum == 6:
+        react["reactedType"]="Haha"
+    else :
+        print("Invalid react Type")
+        return
+
+    try:
+        query = "UPDATE RESPONDS SET reacted_type='%s' WHERE story_id = '%d' AND reacter_id='%d'" %(react["reactedType"], react["story_id"], react["reacter_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data :(")
+        return
+
+    viewTableDel('29')
+    return
+
+def updateGroup():
+    viewTableDel('17')
+    global cur
+    group = {}
+
+    try:
+        group["group_id"] = int(input("Enter the group ID of the group you want to update: "))
+    except Exception as e:
+        print(e)
+        print("Group ID must be an integer")
+        return
+
+    group["group_name"] = input("Enter the new name of the Group Name: ")
+    print("Select the new privacy status of the group: ")
+    print("1. Public")
+    print("2. Private")
+    print("3. Secret")
+
+    try:
+        groupNum = int(input())
+    except Exception as e:
+        print(e)
+        print("Invalid Group Privacy Type")
+        return
+
+    if groupNum==1:
+        group["group_privacy"] = "Public"
+    elif groupNum==2:
+        group["group_privacy"] = "Private"
+    elif groupNum==3:
+        group["group_privacy"] = "Secret"
+    else:
+        print("Invalid Group Privacy Type")
+        return
+
+    try:
+        query = "UPDATE social_media.GROUP SET group_name='%s',group_privacy='%s' WHERE group_id='%d'" %(group["group_name"],group["group_privacy"],group["group_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data :(")
+        return
+
+    viewTableDel('17')
+    return
+
+def updateProfile():
+    viewTableDel('5')
+    global cur
+    profile = {}
+
+    try:
+        profile["user_id"] = int(input("Enter the User ID of the profile u want to update: "))
+    except Exception as e:
+        print(e)
+        print("User ID should be an integer ")
+        return
+
+    profile["dob"] = input("Enter the updated Date of Birth in YYYY-MM-DD format ")
+
+    try:
+        query = "UPDATE PROFILE SET date_of_birth='%s' WHERE user_id='%d'" %(profile["dob"],profile["user_id"])
+        cur.execute(query)
+        con.commit()
+    except Exception as e:
+        print(e)
+        print("Try again with different data")
+        return
+
+    viewTableDel('5')
+    return
+
+def updatePassword():
+    global cur
+    query = "SELECT user_id,name,email FROM USER"
+    try:
+        no_of_rows = cur.execute(query)
+
+    except Exception as e:
+        print(e)
+        return
+    rows = cur.fetchall()
+    viewTable(rows)
+    con.commit()
+
+    user={}
+    try:
+        user['uid'] = int(input("Enter your user ID: "))
+    except Exception as e:
+        print(e)
+        print("User ID must be an integer")
+        return
+    user['prev_password'] = input("Enter your previous password: ")
+    try:
+        query = "SELECT password FROM USER WHERE user_id = '%d'" %(user['uid'])
+        cur.execute(query)
+        prev_pass = cur.fetchone()
+        prev_pass = str(prev_pass["password"])
+    except Exception as e:
+        print(e)
+        return
+    #print(prev_pass,user["prev_password"])
+    if (prev_pass == user["prev_password"]):
+        user["new_password"]= input("Enter your new password: ")
+        try:
+            query = "UPDATE USER SET password = '%s' WHERE user_id = '%d'" %(user["new_password"],user['uid'])
+            cur.execute(query)
+            con.commit()
+            print("Password changed succesfully!")
+        except Exception as e:
+            print(e)
+            return
+
+    else:
+        print("WRONG PASSWORD!!")
+        return
+
+    return
+
+
+def updOptions():
+    print("Select from the options below :")
+    print("1. Edit Post")
+    print("2. Edit Comment")
+    print("3. Edit Story")
+    print("4. Edit Page")
+    print("5. Change the react to a Post")
+    print("6. Change react to Comment")
+    print("7. Change react to a Story")
+    print("8. Edit Group Info")
+    print("9. Edit Profile ")
+    print("10. Update Password")
+
+
+    optn = input("Your option is : ")
+
+    try:
+        optn = int(optn)
+    except Exception as e:
+        print(e)
+        return
+
+    if optn==1 :
+        updatePost()
+    elif optn==2:
+        updateComment()
+    elif optn==3:
+        updateStory()
+    elif optn==4:
+        updatePage()
+    elif optn==5:
+        updateGeneralReact()
+    elif optn==6:
+        updateMakesReact()
+    elif optn==7:
+        updateResponds()
+    elif optn==8:
+        updateGroup()
+    elif optn==9:
+        updateProfile()
+    elif optn==10:
+        updatePassword()
+    else:
+        print("Oops! Choose an option between 1 to 9")
+    return
+
+###############################################################################################
 
 def refreshDatabase():
     global cur
@@ -1152,24 +2086,18 @@ while(1):
             print("5.Quit")
             inp = input("\nENTER: ")
             if(inp == '1'):
-                # addUser()
-                # addProfile()
-                # addPost()
-                # addFollows()
-
-                # addMakesGe    neralReact()
-                # addComment()
-                # addStory()
-                addMessage()
-                # addLikes()
                 viewOptions()
             elif(inp == '2'):
                 insertionOptions()
+            elif(inp == '3'):
+                delOptions()
+            elif(inp == '4'):
+                updOptions()
             elif(inp == '5'):
                 exitflag = 1
                 print("Exiting.")
                 break
-            
+
             input("Press enter to continue: ")
 
     if exitflag == 1:
