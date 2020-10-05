@@ -3,7 +3,7 @@ CREATE DATABASE social_media;
 USE social_media;
 
 DROP TABLE IF EXISTS USER;
-CREATE TABLE USER (
+CREATE TABLE USER ( -- Done
     user_id INT NOT NULL AUTO_INCREMENT primary key,
     password varchar(120) NOT NULL,
     name varchar(50) NOT NULL,
@@ -19,7 +19,7 @@ insert into USER VALUES(NULL, '#PinRaYI', 'Pinarayi Vijayan',  'cmo@kerala.gov.i
 insert into USER VALUES(NULL, 'Chowkeedar', 'Narendra Modi',  'pm@gov.in', '7 Lok Kalyan Marg, New Delhi', 1111111111, '100:00:04');
 
 DROP TABLE IF EXISTS POST;
-CREATE TABLE POST (
+CREATE TABLE POST ( -- Done
     post_id int not null AUTO_INCREMENT,
     time TIMESTAMP not null,
     text TEXT,
@@ -37,7 +37,7 @@ insert into POST VALUES(NULL, '2020-10-03 09:00:01', "Today, I will be inaugurat
 insert into POST VALUES(NULL, '2020-10-03 16:00:01', NULL, "https://d3nuqriibqh3vw.cloudfront.net/attachment-4_resized_0.jpg?Y82N9g17xw0FhDEVnmX8nAs96cyHP.w6", 2);
 
 DROP TABLE IF EXISTS COMMENT;
-CREATE TABLE COMMENT(
+CREATE TABLE COMMENT( -- Done
     comment_id int not null AUTO_INCREMENT PRIMARY KEY,
     time TIMESTAMP not NULL,
     text TEXT,
@@ -61,7 +61,7 @@ insert into COMMENT VALUES(NULL, '2020-10-03 12:00:10', "Amazing work..", NULL);
 -- [comment 7]
 
 DROP TABLE IF EXISTS STORIES;
-CREATE TABLE STORIES(
+CREATE TABLE STORIES( -- Done
     story_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     time DATETIME,
     text TEXT,
@@ -73,7 +73,7 @@ CREATE TABLE STORIES(
 insert into STORIES VALUES(NULL, '2020-10-03 15:00:00', "Hey, what a horrific day", "https://st.depositphotos.com/1006250/1214/i/950/depositphotos_12141968-stock-photo-dry-field-road-in-the.jpg", 1);
 
 DROP TABLE IF EXISTS MESSAGE;
-CREATE TABLE MESSAGE(
+CREATE TABLE MESSAGE( -- Done
     message_id int not null PRIMARY KEY AUTO_INCREMENT,
     text TEXT not null
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
@@ -90,7 +90,7 @@ insert into MESSAGE VALUES(NULL, "I knew it.");
 -- insert into MESSAGE VALUES();
 
 DROP TABLE IF EXISTS PROFILE;
-CREATE TABLE PROFILE (
+CREATE TABLE PROFILE ( -- Done
     user_id int PRIMARY KEY,
     date_of_birth DATE not null,
     sex ENUM('Male', 'Female', 'Others', 'PreferNotToSay') not null,
@@ -102,7 +102,7 @@ insert into PROFILE VALUES(2, '2000-05-03', 1);
 insert into PROFILE VALUES(3, '1992-06-12', 1);
 
 DROP TABLE IF EXISTS EDUCATION;
-CREATE TABLE EDUCATION (
+CREATE TABLE EDUCATION ( -- Done
     user_id INT,
     education VARCHAR(100),
     PRIMARY KEY (user_id, education),
@@ -117,7 +117,7 @@ insert into EDUCATION VALUES(3, "Doctor of Philosophy in Political Science");
 
 
 DROP TABLE IF EXISTS PAGE;
-CREATE TABLE PAGE (
+CREATE TABLE PAGE ( -- Done
     page_id int AUTO_INCREMENT NOT NULL PRIMARY KEY,
     page_name varchar(100) NOT NULL,
     owner_id int,
@@ -128,7 +128,7 @@ insert into PAGE VALUES(NULL, "Disney World", 1);
 insert into PAGE VALUES(NULL, "BSNL", 3);
 
 DROP TABLE IF EXISTS BUSINESS_PLACE;
-CREATE TABLE BUSINESS_PLACE (
+CREATE TABLE BUSINESS_PLACE ( -- Done
     page_id int PRIMARY KEY,
     owner_name varchar(100) NOT NULL,
     location varchar(100),
@@ -136,7 +136,7 @@ CREATE TABLE BUSINESS_PLACE (
 );
 
 DROP TABLE IF EXISTS PROD_BP;
-CREATE TABLE PROD_BP(
+CREATE TABLE PROD_BP( -- Done
     page_id int,
     name varchar(50),
     price decimal(10,2),
@@ -145,7 +145,7 @@ CREATE TABLE PROD_BP(
 );
 
 DROP TABLE IF EXISTS COMPANY;
-CREATE TABLE COMPANY (
+CREATE TABLE COMPANY ( -- Done
     page_id int PRIMARY KEY,
     work_domain varchar(30),
     FOREIGN KEY (page_id) REFERENCES PAGE(page_id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -154,7 +154,7 @@ CREATE TABLE COMPANY (
 insert into COMPANY VALUES(2, "Telecom");
 
 DROP TABLE IF EXISTS BRANCH_COMPANY;
-CREATE TABLE BRANCH_COMPANY (
+CREATE TABLE BRANCH_COMPANY ( -- Done
     page_id int,
     branch varchar(50),
     FOREIGN KEY (page_id) REFERENCES COMPANY(page_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -162,7 +162,7 @@ CREATE TABLE BRANCH_COMPANY (
 );
 
 DROP TABLE IF EXISTS BRAND_PRODUCT;
-CREATE TABLE BRAND_PRODUCT (
+CREATE TABLE BRAND_PRODUCT ( -- Done
     page_id int PRIMARY KEY,
     website varchar(50),
     cust_service int(10),
@@ -170,7 +170,7 @@ CREATE TABLE BRAND_PRODUCT (
 );
 
 DROP TABLE IF EXISTS PUBLIC_FIGURE;
-CREATE TABLE PUBLIC_FIGURE (
+CREATE TABLE PUBLIC_FIGURE ( -- Done
     page_id int PRIMARY KEY,
     name varchar(50),
     field varchar(50),
@@ -178,7 +178,7 @@ CREATE TABLE PUBLIC_FIGURE (
 );
 
 DROP TABLE IF EXISTS NEWS_PUB_FIG;
-CREATE TABLE NEWS_PUB_FIG (
+CREATE TABLE NEWS_PUB_FIG ( -- Done
     page_id int ,
     news varchar(1000),
     published_time timestamp,
@@ -187,7 +187,7 @@ CREATE TABLE NEWS_PUB_FIG (
 );
 
 DROP TABLE IF EXISTS ENTERTAINMENT;
-CREATE TABLE ENTERTAINMENT  (
+CREATE TABLE ENTERTAINMENT  ( -- Done
     page_id int PRIMARY KEY,
     events varchar(300),
     audience varchar(300),
@@ -198,7 +198,7 @@ insert into ENTERTAINMENT VALUES(1, "Closing ceremony: Closing for unknown perio
 
 
 DROP TABLE IF EXISTS CAUSE_COMMUNITY;
-CREATE TABLE CAUSE_COMMUNITY  (
+CREATE TABLE CAUSE_COMMUNITY  ( -- Done
     page_id int PRIMARY KEY,
     goal varchar(300),
     activities varchar(300),
@@ -206,7 +206,7 @@ CREATE TABLE CAUSE_COMMUNITY  (
 );
 
 DROP TABLE IF EXISTS social_media.GROUP;
-CREATE TABLE social_media.GROUP (
+CREATE TABLE social_media.GROUP ( -- Done
     group_id int AUTO_INCREMENT PRIMARY KEY,
     group_name varchar(50) NOT NULL,
     group_privacy ENUM('Public', 'Private', 'Secret')
@@ -221,7 +221,7 @@ insert into social_media.GROUP VALUES(NULL, "Representatives", 3);
 -- relationships
 
 DROP TABLE IF EXISTS COMMENTS;
-CREATE TABLE COMMENTS (
+CREATE TABLE COMMENTS ( -- Done
     comment_id INT NOT NULL PRIMARY KEY,
     user_id INT NOT NULL,
     post_id INT NOT NULL,
@@ -239,7 +239,7 @@ insert into COMMENTS VALUES(6, 2, 2);
 insert into COMMENTS VALUES(7, 1, 2);
 
 DROP TABLE IF EXISTS FOLLOWS;
-CREATE TABLE FOLLOWS (
+CREATE TABLE FOLLOWS ( -- Done
     follower_id INT NOT NULL ,
     following_id INT NOT NULL,
     FOREIGN KEY (follower_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -247,7 +247,7 @@ CREATE TABLE FOLLOWS (
     PRIMARY KEY(follower_id,following_id)
 );
 -- follower_id follows the user with following_id
-insert into FOLLOWS VALUES(2, 1);
+-- insert into FOLLOWS VALUES(2, 1);
 insert into FOLLOWS VALUES(3, 1);
 insert into FOLLOWS VALUES(1, 2);
 insert into FOLLOWS VALUES(3, 2);
@@ -255,7 +255,7 @@ insert into FOLLOWS VALUES(1, 3);
 insert into FOLLOWS VALUES(2, 3);
 
 DROP TABLE IF EXISTS MAKES_GENERAL_REACT;
-CREATE TABLE MAKES_GENERAL_REACT (
+CREATE TABLE MAKES_GENERAL_REACT ( -- Done
     user_id INT NOT NULL ,
     post_id INT NOT NULL,
     reacted_type ENUM('Like', 'Haha', 'Heart', 'Angry', 'Wow', 'Dislike'),
@@ -274,7 +274,7 @@ insert into MAKES_GENERAL_REACT VALUES(3, 2, 1);
 insert into MAKES_GENERAL_REACT VALUES(3, 4, 1);
 
 DROP TABLE IF EXISTS LIKES;
-CREATE TABLE LIKES (
+CREATE TABLE LIKES ( -- Done
     user_id INT NOT NULL ,
     page_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -283,7 +283,7 @@ CREATE TABLE LIKES (
 );
 
 DROP TABLE IF EXISTS BELONGS_TO;
-CREATE TABLE BELONGS_TO (
+CREATE TABLE BELONGS_TO ( -- Dine
     user_id INT NOT NULL ,
     group_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -300,7 +300,7 @@ insert INTO BELONGS_TO VALUES(2, 3);
 insert INTO BELONGS_TO VALUES(3, 3);
 
 DROP TABLE IF EXISTS IS_ADMIN;
-CREATE TABLE IS_ADMIN (
+CREATE TABLE IS_ADMIN ( -- Done
     user_id INT NOT NULL ,
     group_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -315,7 +315,7 @@ insert into IS_ADMIN VALUES(3, 3);
 
 
 DROP TABLE IF EXISTS IS_MODERATOR;
-CREATE TABLE IS_MODERATOR (
+CREATE TABLE IS_MODERATOR ( -- DOne
     user_id INT NOT NULL ,
     group_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -327,7 +327,7 @@ insert into IS_MODERATOR VALUES(2, 1);
 insert into IS_MODERATOR VALUES(1, 2);
 
 DROP TABLE IF EXISTS MAKES_A_REACT;
-CREATE TABLE MAKES_A_REACT (
+CREATE TABLE MAKES_A_REACT ( -- Done
     user_id INT NOT NULL ,
     comment_id INT NOT NULL,
     reacted_type ENUM('Like', 'Haha', 'Heart', 'Angry', 'Wow', 'Dislike'),
@@ -343,7 +343,7 @@ insert into MAKES_A_REACT VALUES(3, 4, 3);
 insert into MAKES_A_REACT VALUES(2, 7, 3);
 
 DROP TABLE IF EXISTS MENTIONS;
-CREATE TABLE MENTIONS (
+CREATE TABLE MENTIONS ( -- Done
     mentioner_id INT NOT NULL ,
     mentionee_id INT NOT NULL,
     comment_id INT NOT NULL,
@@ -357,7 +357,7 @@ insert into MENTIONS VALUES(3, 2, 5); -- Modi mentions pinarayi in thanks messag
 insert into MENTIONS VALUES(2, 3, 6); -- Pinarayi mentions Modi in thanks message.
 
 DROP TABLE IF EXISTS SENDS_SPECIFIC;
-CREATE TABLE SENDS_SPECIFIC (
+CREATE TABLE SENDS_SPECIFIC ( -- Done
     sender_id INT NOT NULL ,
     receiver_id INT NOT NULL,
     message_id INT NOT NULL,
@@ -374,7 +374,7 @@ insert into SENDS_SPECIFIC VALUES(2, 3, 3);
 insert into SENDS_SPECIFIC VALUES(3, 2, 4);
 
 DROP TABLE IF EXISTS SENDS_GENERAL;
-CREATE TABLE SENDS_GENERAL (
+CREATE TABLE SENDS_GENERAL ( -- Done
     sender_id INT NOT NULL ,
     group_id INT NOT NULL,
     message_id INT NOT NULL,
@@ -389,9 +389,10 @@ insert into SENDS_GENERAL VALUES(2, 1, 6);
 insert into SENDS_GENERAL VALUES(1, 1, 7);
 
 DROP TABLE IF EXISTS RESPONDS;
-CREATE TABLE RESPONDS (
+CREATE TABLE RESPONDS ( -- Done
     reacter_id INT NOT NULL ,
-    story_id INT NOT NULL,reacted_type ENUM('Like', 'Haha', 'Heart', 'Angry', 'Wow', 'Dislike'),
+    story_id INT NOT NULL,
+    reacted_type ENUM('Like', 'Haha', 'Heart', 'Angry', 'Wow', 'Dislike'),
     FOREIGN KEY (reacter_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (story_id) REFERENCES STORIES(story_id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY(reacter_id,story_id)
@@ -401,7 +402,7 @@ insert into RESPONDS VALUES(2, 1, 2);
 insert into RESPONDS VALUES(3, 1, 5);
 
 DROP TABLE IF EXISTS SHARES;
-CREATE TABLE SHARES (
+CREATE TABLE SHARES ( -- Done
     user_id INT NOT NULL ,
     group_id INT NOT NULL,
     post_id INT NOT NULL,
@@ -416,7 +417,7 @@ insert into SHARES VALUES(3, 1, 3);
 insert into SHARES VALUES(2, 2, 2);
 
 DROP TABLE IF EXISTS IS_TAGGED;
-CREATE TABLE IS_TAGGED (
+CREATE TABLE IS_TAGGED ( -- Done
     user_id INT NOT NULL ,
     post_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE ON UPDATE CASCADE,
