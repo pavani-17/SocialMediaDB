@@ -6,7 +6,7 @@ A simple database application designed with miniworld as a social media, with CL
 
 
 ```shell 
- mysql -h <local host> -u <username> --port=<port> -p > SocialMediaDB.sql
+ mysql -h <local host> -u <username> --port=<port> -p < SocialMediaDB.sql
  python3 app.py
 ```
 
