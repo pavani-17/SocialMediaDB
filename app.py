@@ -7,6 +7,72 @@ from datetime import datetime
 import time
 import datetime
 
+# ----------------- Functional Requirement Start ---------------
+
+
+def printWeeklyReport():
+    global cur
+    query = "select CAST(MIN(CAST(uptime as float)) as TIME) as 'MINIMUM UPTIME' from USER;"
+    try:
+        cur.execute(query)
+        con.commit()
+        dic = {}
+        print(tabulate(cur.fetchall(), headers=dic, tablefmt='psql'))
+    except Exception as e:
+        con.rollback()
+        print(e)
+        return
+    # print(cur.fetchone())
+    query = "select CAST(MAX(CAST(uptime as float)) as TIME) as 'MAXIMUM UPTIME'from USER;"
+    try:
+        cur.execute(query)
+        con.commit()
+        dic = {}
+        print(tabulate(cur.fetchall(), headers=dic, tablefmt='psql'))
+    except Exception as e:
+        con.rollback()
+        print(e)
+        return
+    # print(cur.fetchall())
+    query = "select CAST(AVG(CAST(uptime as float)) as TIME) as 'MEAN UPTIME' from USER;"
+    try:
+        cur.execute(query)
+        con.commit()
+        dic = {}
+        print(tabulate(cur.fetchall(), headers=dic, tablefmt='psql'))
+    except Exception as e:
+        con.rollback()
+        print(e)
+        return
+    # print(cur.fetchall())
+    query = """select CAST(AVG(CAST(med.uptime as float)) as TIME) as 'MEDIAN UPTIME' from (select @rowindex:=@rowindex + 1 as rowindex, USER.uptime from USER order by uptime) AS med where med.rowindex in (FLOOR(@rowindex/2), CEIL(@rowindex/2));"""
+    # print(query)
+    # con.autocommit()
+    try:
+        cur.execute("set@rowindex := -1;")
+        con.commit()
+        cur.execute(query)
+        con.commit()
+        dic = {}
+        print(tabulate(cur.fetchall(), headers=dic, tablefmt='psql'))
+    except Exception as e:
+        con.rollback()
+        print(e)
+        # return
+    # print(cur.fetchall())
+    query = "select stddev(uptime) as 'STANDARD DEVIATION OF UPTIME' from USER;"
+    try:
+        cur.execute(query)
+        con.commit()
+        dic = {}
+        print(tabulate(cur.fetchall(), headers=dic, tablefmt='psql'))
+    except Exception as e:
+        con.rollback()
+        print(e)
+        return
+    # print(cur.fetchall())
+
+
 def search():
     search_key = input("Enter the keyword to be searched for: ")
     search_key = search_key+'+'
@@ -22,26 +88,27 @@ def search():
         print(e)
         print("Invalid domain type")
         return
-    if search_param==1:
+    if search_param == 1:
         search_type = "USER"
         search_field = "name"
-    elif search_param==2:
+    elif search_param == 2:
         search_type = "POST"
         search_field = "text"
-    elif search_param==3:
+    elif search_param == 3:
         search_type = "COMMENT"
         search_field = "text"
-    elif search_param==4:
+    elif search_param == 4:
         search_type = "PAGE"
         search_field = "page_name"
-    elif search_param==5:
+    elif search_param == 5:
         search_type = "social_media.GROUP"
         search_field = "group_name"
-    
+
     try:
-        query = "SELECT * FROM %s WHERE %s REGEXP '%s'" %(search_type,search_field,search_key)
+        query = "SELECT * FROM %s WHERE %s REGEXP '%s'" % (
+            search_type, search_field, search_key)
         r = cur.execute(query)
-        if r==0:
+        if r == 0:
             print("No result found")
             return
         rows = cur.fetchall()
@@ -50,18 +117,20 @@ def search():
         print(e)
         print("Could not perform search")
 
+
 def generateReport():
     try:
-        user_id = int(input("Enter the User ID of the user you want to generate the report for: "))
+        user_id = int(
+            input("Enter the User ID of the user you want to generate the report for: "))
     except Exception as e:
         print(e)
         print("User ID must be a number")
         return
     try:
-        
-        query = "SELECT * FROM USER WHERE user_id=%d" %(user_id)
+
+        query = "SELECT * FROM USER WHERE user_id=%d" % (user_id)
         r = cur.execute(query)
-        if r==0:
+        if r == 0:
             print("Could not find details of the given User ID")
             return
         print("The details of the user are as follows: ")
@@ -82,116 +151,126 @@ def generateReport():
         print("11. Group Member")
 
         try:
-            report_type = int(input("Enter the number of the report you would like to see: "))
+            report_type = int(
+                input("Enter the number of the report you would like to see: "))
         except Exception as e:
             print(e)
             print("Invalid Choice")
             return
 
-        if report_type==1:
-            query = "SELECT * FROM USER WHERE user_id IN (SELECT follower_id FROM FOLLOWS WHERE following_id=%d)" %(user_id)
+        if report_type == 1:
+            query = "SELECT * FROM USER WHERE user_id IN (SELECT follower_id FROM FOLLOWS WHERE following_id=%d)" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("There are no followers for the user\n")
             else:
                 print("The users following the user are as follows: ")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==2:
-            query = "SELECT * FROM USER WHERE user_id IN (SELECT following_id FROM FOLLOWS WHERE follower_id=%d)" %(user_id)
+        elif report_type == 2:
+            query = "SELECT * FROM USER WHERE user_id IN (SELECT following_id FROM FOLLOWS WHERE follower_id=%d)" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user does not follow anyone \n")
             else:
                 print("The users the given user is following are as follows: ")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==3:
-            query = "SELECT * FROM POST WHERE user_id=%d" %(user_id)
+        elif report_type == 3:
+            query = "SELECT * FROM POST WHERE user_id=%d" % (user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user did not post any post\n")
             else:
                 print("Posts posted by the user:")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==4: 
-            query = "SELECT COMMENT.comment_id, COMMENT.text, COMMENT.media, COMMENTS.post_id FROM COMMENT INNER JOIN COMMENTS ON COMMENT.comment_id = COMMENTS.comment_id WHERE COMMENTS.user_id = %d" %(user_id)
+        elif report_type == 4:
+            query = "SELECT COMMENT.comment_id, COMMENT.text, COMMENT.media, COMMENTS.post_id FROM COMMENT INNER JOIN COMMENTS ON COMMENT.comment_id = COMMENTS.comment_id WHERE COMMENTS.user_id = %d" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user did not post any post\n")
             else:
                 print("Comments posted by the user:")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==5:
-            query = "SELECT POST.post_id, POST.text, POST.media, POST.user_id, MAKES_GENERAL_REACT.reacted_type FROM POST INNER JOIN MAKES_GENERAL_REACT ON POST.post_id = MAKES_GENERAL_REACT.post_id WHERE MAKES_GENERAL_REACT.user_id = %d" %(user_id)
+        elif report_type == 5:
+            query = "SELECT POST.post_id, POST.text, POST.media, POST.user_id, MAKES_GENERAL_REACT.reacted_type FROM POST INNER JOIN MAKES_GENERAL_REACT ON POST.post_id = MAKES_GENERAL_REACT.post_id WHERE MAKES_GENERAL_REACT.user_id = %d" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user did not react on any post\n")
             else:
                 print("Posts reacted on by the user:")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==6:   
-            query = "SELECT COMMENT.comment_id, COMMENT.text, COMMENT.media, COMMENTS.post_id, MAKES_A_REACT.reacted_type FROM COMMENT INNER JOIN COMMENTS ON COMMENT.comment_id = COMMENTS.comment_id INNER JOIN MAKES_A_REACT ON MAKES_A_REACT.comment_id = COMMENT.comment_id WHERE MAKES_A_REACT.comment_id=%d" %(user_id)
+        elif report_type == 6:
+            query = "SELECT COMMENT.comment_id, COMMENT.text, COMMENT.media, COMMENTS.post_id, MAKES_A_REACT.reacted_type FROM COMMENT INNER JOIN COMMENTS ON COMMENT.comment_id = COMMENTS.comment_id INNER JOIN MAKES_A_REACT ON MAKES_A_REACT.comment_id = COMMENT.comment_id WHERE MAKES_A_REACT.comment_id=%d" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user did not react on any comment\n")
             else:
                 print("Comments reacted on by the user: ")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==7:
-            query = "SELECT * FROM PAGE WHERE owner_id = %d" %(user_id)
+        elif report_type == 7:
+            query = "SELECT * FROM PAGE WHERE owner_id = %d" % (user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user did not create any page\n")
             else:
                 print("Pages created by the user: ")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==8:
-            query = "SELECT * FROM PAGE WHERE page_id IN (SELECT page_id FROM LIKES WHERE user_id=%d)" %(user_id)
+        elif report_type == 8:
+            query = "SELECT * FROM PAGE WHERE page_id IN (SELECT page_id FROM LIKES WHERE user_id=%d)" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user did not like any page\n")
             else:
                 print("Pages liked by the user: ")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==9:
-            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM IS_ADMIN WHERE user_id=%d)" %(user_id)
+        elif report_type == 9:
+            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM IS_ADMIN WHERE user_id=%d)" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user is not the admin of any group\n")
             else:
                 print("Groups the user is the admin of: ")
                 rows = cur.fetchall()
                 viewTable(rows)
-        
-        elif report_type==10:
-            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM IS_MODERATOR WHERE user_id=%d)" %(user_id)
+
+        elif report_type == 10:
+            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM IS_MODERATOR WHERE user_id=%d)" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user is not the moderator of any group\n")
             else:
                 print("Groups the user is the moderator of: ")
                 rows = cur.fetchall()
                 viewTable(rows)
 
-        elif report_type==11:
-            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM BELONGS_TO WHERE user_id=%d)" %(user_id)
+        elif report_type == 11:
+            query = "SELECT * FROM social_media.GROUP WHERE group_id IN (SELECT group_id FROM BELONGS_TO WHERE user_id=%d)" % (
+                user_id)
             r = cur.execute(query)
-            if r==0:
+            if r == 0:
                 print("The user is does not belong to any group\n")
             else:
                 print("Groups the user is the belongs to: ")
@@ -204,6 +283,8 @@ def generateReport():
 
 ###############################################################################################
 ##############################################################################################
+
+
 def mutual():
     try:
 
@@ -232,11 +313,11 @@ def mutual():
                                 (SELECT following_id
                                 FROM FOLLOWS
                                 WHERE follower_id = '%s')
-                    ''' %(user1ID, user2ID)
+                    ''' % (user1ID, user2ID)
 
             r = cur.execute(query)
             print("Mutual Followers:")
-            if(r==0):
+            if(r == 0):
                 print("NO MUTUAL FOLLOWERS")
             rows = cur.fetchall()
             viewTable(rows)
@@ -255,11 +336,11 @@ def mutual():
                                 (SELECT follower_id
                                 FROM FOLLOWS
                                 WHERE following_id = '%s')
-                    ''' %(user1ID, user2ID)
+                    ''' % (user1ID, user2ID)
 
             r = cur.execute(query)
             print("Mutual Followings:")
-            if(r==0):
+            if(r == 0):
                 print("NO MUTUAL FOLLOWINGS")
             rows = cur.fetchall()
             viewTable(rows)
@@ -278,11 +359,11 @@ def mutual():
                                 (SELECT page_id
                                 FROM LIKES
                                 WHERE user_id = '%s')
-                    ''' %(user1ID, user2ID)
+                    ''' % (user1ID, user2ID)
 
             r = cur.execute(query)
             print("Mutual Likes to Pages:")
-            if(r==0):
+            if(r == 0):
                 print("NO MUTUAL LIKES")
             rows = cur.fetchall()
             viewTable(rows)
@@ -301,11 +382,11 @@ def mutual():
                                 (SELECT group_id
                                 FROM BELONGS_TO
                                 WHERE user_id = '%s')
-                    ''' %(user1ID, user2ID)
+                    ''' % (user1ID, user2ID)
 
             r = cur.execute(query)
             print("Mutual Likes to Pages:")
-            if(r==0):
+            if(r == 0):
                 print("NO MUTUAL LIKES")
             rows = cur.fetchall()
             viewTable(rows)
@@ -321,7 +402,8 @@ def mutual():
 
 def eventTracker():
     try:
-        uid = int(input("Enter the UserID for the User you want to check the events for: "))
+        uid = int(
+            input("Enter the UserID for the User you want to check the events for: "))
         date = input("Enter the date for the event tracking in MM-DD format: ")
         querybirthday = '''
                         SELECT * FROM USER WHERE user_id IN
@@ -329,16 +411,15 @@ def eventTracker():
                             (SELECT following_id FROM FOLLOWS WHERE follower_id = '%d')
                         AND
                         (date_of_birth REGEXP '%s'));
-                        '''%(uid, date+'+')
+                        ''' % (uid, date+'+')
 
         queryposts = '''
                         SELECT * FROM POST WHERE time REGEXP '%s' AND user_id = '%s';
-                     ''' %(date+'+',uid)
-
+                     ''' % (date+'+', uid)
 
         r1 = cur.execute(querybirthday)
         print("Birthdays ->")
-        if(r1==0):
+        if(r1 == 0):
             print("No Birthdays")
         else:
             rows = cur.fetchall()
@@ -346,28 +427,29 @@ def eventTracker():
 
         r1 = cur.execute(queryposts)
         print("Posts made on this day ->")
-        if(r1==0):
+        if(r1 == 0):
             print("No Posts")
-        else :
+        else:
             rows = cur.fetchall()
             viewTable(rows)
 
     except Exception as e:
-        print (e)
+        print(e)
         print("ERROR")
         return
 
 
 def listReacttoPost():
     try:
-        post_id=int(input("Choose the PostID you want to see the reacts for: "))
+        post_id = int(
+            input("Choose the PostID you want to see the reacts for: "))
         queryposts = '''
                         SELECT USER.user_id,USER.name,MAKES_GENERAL_REACT.reacted_type FROM (MAKES_GENERAL_REACT INNER JOIN USER ON MAKES_GENERAL_REACT.user_id = USER.user_id ) WHERE MAKES_GENERAL_REACT.post_id = '%d';
-                     ''' %(post_id)
+                     ''' % (post_id)
 
         r1 = cur.execute(queryposts)
         print("Reacts to the post ->")
-        if(r1==0):
+        if(r1 == 0):
             print("No reacts yet")
         else:
             rows = cur.fetchall()
@@ -377,17 +459,19 @@ def listReacttoPost():
         print("ERROR")
         return
     return
+
 
 def listReacttoComment():
     try:
-        comment_id=int(input("Choose the CommentID you want to see the reacts for: "))
+        comment_id = int(
+            input("Choose the CommentID you want to see the reacts for: "))
         query = '''
                         SELECT USER.user_id,USER.name,MAKES_A_REACT.reacted_type FROM (MAKES_A_REACT INNER JOIN USER ON MAKES_A_REACT.user_id = USER.user_id ) WHERE MAKES_A_REACT.comment_id = '%d';
-                     ''' %(comment_id)
+                     ''' % (comment_id)
 
         r1 = cur.execute(query)
         print("Reacts to the Comment ->")
-        if(r1==0):
+        if(r1 == 0):
             print("No reacts yet")
         else:
             rows = cur.fetchall()
@@ -397,17 +481,19 @@ def listReacttoComment():
         print("ERROR")
         return
     return
+
 
 def listCommenttoPost():
     try:
-        post_id=int(input("Choose the PostID you want to see the comments for: "))
+        post_id = int(
+            input("Choose the PostID you want to see the comments for: "))
         query = '''
                         SELECT USER.user_id,USER.name,COMMENTS.comment_id,COMMENT.text,COMMENT.time FROM COMMENTS INNER JOIN USER ON COMMENTS.user_id = USER.user_id INNER JOIN COMMENT ON COMMENTS.comment_id = COMMENT.comment_id  WHERE COMMENTS.post_id = '%d';
-                     ''' %(post_id)
+                     ''' % (post_id)
 
         r1 = cur.execute(query)
         print("Comments to the Post ->")
-        if(r1==0):
+        if(r1 == 0):
             print("No reacts yet")
         else:
             rows = cur.fetchall()
@@ -417,6 +503,7 @@ def listCommenttoPost():
         print("ERROR")
         return
     return
+
 
 def postListing():
     try:
@@ -430,13 +517,14 @@ def postListing():
             listCommenttoPost()
         elif(optn == 2):
             listReacttoPost()
-        else :
+        else:
             print("Invalid Option")
         return
     except Exception as e:
         print(e)
         print("ERROR")
         return
+
 
 def commentListing():
     try:
@@ -447,13 +535,14 @@ def commentListing():
 
         if(optn == 1):
             listReacttoComment()
-        else :
+        else:
             print("Invalid Option")
         return
     except Exception as e:
         print(e)
         print("ERROR")
         return
+
 
 def showSuggestions():
     print("Choose the option to see suggestions for: ")
@@ -463,7 +552,8 @@ def showSuggestions():
     try:
         optn = int(input("Enter option : "))
         if (optn == 1):
-            user_id=int(input("Enter the User ID you want to see the FOLLOWING suggestions for : "))
+            user_id = int(
+                input("Enter the User ID you want to see the FOLLOWING suggestions for : "))
             query = '''
                         SELECT * FROM USER WHERE user_id IN (
                             SELECT following_id FROM FOLLOWS WHERE follower_id IN (
@@ -475,18 +565,19 @@ def showSuggestions():
                             )
                             AND user_id <> '%d';
 
-                        ''' %(user_id,user_id,user_id)
+                        ''' % (user_id, user_id, user_id)
 
             r1 = cur.execute(query)
             print("Suggestions ->")
-            if(r1==0):
+            if(r1 == 0):
                 print("No suggestion to show")
             else:
                 rows = cur.fetchall()
                 viewTable(rows)
             return
         elif (optn == 2):
-            user_id=int(input("Enter the User ID you want to see the PAGES suggestions for : "))
+            user_id = int(
+                input("Enter the User ID you want to see the PAGES suggestions for : "))
             query = '''
                     SELECT * FROM PAGE WHERE page_id IN (
                         SELECT page_id FROM LIKES WHERE user_id IN (
@@ -496,18 +587,19 @@ def showSuggestions():
                         AND page_id NOT IN (
                             SELECT page_id FROM LIKES WHERE user_id = '%d'
                         )
-                     ''' %(user_id,user_id)
+                     ''' % (user_id, user_id)
 
             r1 = cur.execute(query)
             print("Suggestions ->")
-            if(r1==0):
+            if(r1 == 0):
                 print("No suggestion to show")
             else:
                 rows = cur.fetchall()
                 viewTable(rows)
             return
         elif (optn == 3):
-            user_id=int(input("Enter the User ID you want to see the GROUPS suggestions for : "))
+            user_id = int(
+                input("Enter the User ID you want to see the GROUPS suggestions for : "))
             query = '''
                         SELECT * FROM social_media.GROUP WHERE group_id IN (
                             SELECT group_id FROM BELONGS_TO WHERE user_id IN (
@@ -517,11 +609,11 @@ def showSuggestions():
                             AND group_id NOT IN (
                                 SELECT group_id FROM BELONGS_TO WHERE user_id = '%d'
                             )
-                    ''' %(user_id,user_id)
+                    ''' % (user_id, user_id)
 
             r1 = cur.execute(query)
             print("Suggestions ->")
-            if(r1==0):
+            if(r1 == 0):
                 print("No suggestion to show")
             else:
                 rows = cur.fetchall()
@@ -536,14 +628,16 @@ def showSuggestions():
         return
 
 
-###############################################################################################
+# ----------------- Functional Requirement End --------------------------------------------- #
+##############################################################################################
 ##############################################################################################
 
 def checkIsMemberOfGroup(user_id, group_id):
     global cur
 
     try:
-        query = "SELECT * FROM BELONGS_TO WHERE user_id=%d AND group_id=%d;" %(int(user_id), int(group_id))
+        query = "SELECT * FROM BELONGS_TO WHERE user_id=%d AND group_id=%d;" % (
+            int(user_id), int(group_id))
         # print(query)
         try:
             cur.execute(query)
@@ -560,11 +654,13 @@ def checkIsMemberOfGroup(user_id, group_id):
         # print("hi")
         return False
 
+
 def checkCommentIntegrity(comment_id, user_id):
     global cur
 
     try:
-        query = "SELECT * FROM COMMENTS WHERE user_id=%d AND comment_id=%d;" %(int(user_id), int(comment_id))
+        query = "SELECT * FROM COMMENTS WHERE user_id=%d AND comment_id=%d;" % (
+            int(user_id), int(comment_id))
         # print(query)
         try:
             cur.execute(query)
@@ -585,6 +681,7 @@ def checkCommentIntegrity(comment_id, user_id):
 def getCurrentTimeStamp():
     ts = time.time()
     return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+
 
 def isNonEmptyQuery(query):
     global cur
@@ -619,124 +716,131 @@ def viewTable(rows):
 
 def viewOptions():
     global cur
+    while(1):
+        tmp = sp.call('clear', shell=True)
+        refreshDatabase()
+        print("\nChoose the data that you want to see.\n\n")
+        print("1.  USERS")
+        print("2.  POST")
+        print("3.  STORIES")
+        print("4.  MESSAGES")
+        print("5.  PROFILES")
+        print("6.  EDUCATION OF USERS")
+        # Pages
+        print("7.  PAGES")
+        print("8.  PAGES OF BUSINESS_PLACE")
+        print("9.  PRODUCTS OF BRANDS AND DETAILS")
+        print("10. PAGES OF COMPANIES")
+        print("11. BRANCHES OF COMPANIES")
+        print("12. PAGES OF BRAND PRODUCTS")
+        print("13. PAGES OF PUBLIC FIGURES")
+        print("14. NEWS ABOUT PUBLIC FIGURES")
+        print("15. PAGES OF ENTERTAINMENT INDUSTRY ENTITIES")
+        print("16. PAGES OF CAUSE COMMUNITIES")
+        # Groups
+        print("17. GROUPS")
+        # RelatioNships
+        print("18. COMMENTS RELATIONSHIPS")
+        print("19. FOLLOWS RELATIONSHIPS")
+        print("20. GENERAL REACTS TO POSTS")
+        print("21. LIKES TO PAGES")
+        print("22. BELONGS TO GROUP RELATIONSHIP WITH USERS")
+        print("23. ADMINS OF GROUPS")
+        print("24. MODERATORS OF GROUPS")
+        print("25. REACTS TO COMMENTS")
+        print("26. MENTIONS OF USERS IN COMMENTS")
+        print("27. SPECIFIC MESSAGES BETWEEN USERS - META DETAILS")
+        print("28. GENERAL MESSAGES TO GROUPS - META DETAILS")
+        print("29. RESPONDS TO STORIES")
+        # Basically posts in a group - comment to avoid semantical confusion
+        print("30. SHARES A POST IN A GROUP")
+        print("31. USERS TAGGED IN POSTS")
+        print("42. Go back.")
+        print("\n")
+        choice = input("Enter: ")
 
-    print("\nChoose the data that you want to see.\n\n")
-    print("1.  USERS")
-    print("2.  POST")
-    print("3.  STORIES")
-    print("4.  MESSAGES")
-    print("5.  PROFILES")
-    print("6.  EDUCATION OF USERS")
-    #Pages
-    print("7.  PAGES")
-    print("8.  PAGES OF BUSINESS_PLACE")
-    print("9.  PRODUCTS OF BRANDS AND DETAILS")
-    print("10. PAGES OF COMPANIES")
-    print("11. BRANCHES OF COMPANIES")
-    print("12. PAGES OF BRAND PRODUCTS")
-    print("13. PAGES OF PUBLIC FIGURES")
-    print("14. NEWS ABOUT PUBLIC FIGURES")
-    print("15. PAGES OF ENTERTAINMENT INDUSTRY ENTITIES")
-    print("16. PAGES OF CAUSE COMMUNITIES")
-    #Groups
-    print("17. GROUPS")
-    #RelatioNships
-    print("18. COMMENTS RELATIONSHIPS")
-    print("19. FOLLOWS RELATIONSHIPS")
-    print("20. GENERAL REACTS TO POSTS")
-    print("21. LIKES TO PAGES")
-    print("22. BELONGS TO GROUP RELATIONSHIP WITH USERS")
-    print("23. ADMINS OF GROUPS")
-    print("24. MODERATORS OF GROUPS")
-    print("25. REACTS TO COMMENTS")
-    print("26. MENTIONS OF USERS IN COMMENTS")
-    print("27. SPECIFIC MESSAGES BETWEEN USERS - META DETAILS")
-    print("28. GENERAL MESSAGES TO GROUPS - META DETAILS")
-    print("29. RESPONDS TO STORIES")
-    print("30. SHARES A POST IN A GROUP") # Basically posts in a group - comment to avoid semantical confusion
-    print("31. USERS TAGGED IN POSTS")
-    print("\n")
-    choice = input("Enter: ")
+        if choice == '1':
+            query = "SELECT * FROM USER;"
+        elif choice == '2':
+            query = "SELECT * FROM POST;"
+        elif choice == '3':
+            query = "SELECT * FROM STORIES;"
+        elif choice == '4':
+            query = "SELECT * FROM MESSAGE;"
+        elif choice == '5':
+            query = "SELECT * FROM PROFILE;"
+        elif choice == '6':
+            query = "SELECT * FROM EDUCATION;"
+        # Pages and subclasses
+        elif choice == '7':
+            query = "SELECT PAGE.page_id, PAGE.page_name, PAGE.owner_id, COUNT(LIKES.user_id) AS Number_of_Likes FROM PAGE LEFT OUTER JOIN LIKES ON PAGE.page_id = LIKES.page_id GROUP BY page_id"
+        elif choice == '8':
+            query = "SELECT * FROM BUSINESS_PLACE;"
+        elif choice == '9':
+            query = "SELECT * FROM PROD_BP;"
+        elif choice == '10':
+            query = "SELECT * FROM COMPANY;"
+        elif choice == '11':
+            query = "SELECT * FROM BRANCH_COMPANY;"
+        elif choice == '12':
+            query = "SELECT * FROM BRAND_PRODUCT;"
+        elif choice == '13':
+            query = "SELECT * FROM PUBLIC_FIGURE;"
+        elif choice == '14':
+            query = "SELECT * FROM NEWS_PUB_FIG;"
+        elif choice == '15':
+            query = "SELECT * FROM ENTERTAINMENT"
+        elif choice == '16':
+            query = "SELECT * FROM CAUSE_COMMUNITY"
+        # Pages over
+        elif choice == '17':
+            query = "SELECT social_media.GROUP.group_id, social_media.GROUP.group_name, social_media.GROUP.group_privacy, COUNT(BELONGS_TO.user_id) AS Number_of_Members FROM social_media.GROUP INNER JOIN BELONGS_TO ON social_media.GROUP.group_id = BELONGS_TO.group_id GROUP BY group_id"
+        # Relationships
+        elif choice == '18':
+            query = "SELECT * FROM COMMENTS;"
+        elif choice == '19':
+            query = "SELECT * FROM FOLLOWS;"
+        elif choice == '20':
+            query = "SELECT * FROM MAKES_GENERAL_REACT;"
+        elif choice == '21':
+            query = "SELECT * FROM LIKES"
+        elif choice == '22':
+            query = "SELECT * FROM BELONGS_TO"
+        elif choice == '23':
+            query = "SELECT * FROM IS_ADMIN"
+        elif choice == '24':
+            query = "SELECT * FROM IS_MODERATOR"
+        elif choice == '25':
+            query = "SELECT * FROM MAKES_A_REACT;"
+        elif choice == '26':
+            query = "SELECT * FROM MENTIONS;"
+        elif choice == '27':
+            query = "SELECT * FROM SENDS_SPECIFIC;"
+        elif choice == '28':
+            query = "SELECT * FROM SENDS_GENERAL"
+        elif choice == '29':
+            query = "SELECT * FROM RESPONDS"
+        elif choice == '30':
+            query = "SELECT * FROM SHARES"
+        elif choice == '31':
+            query = "SELECT * FROM IS_TAGGED;"
+        elif choice == '42':
+            break
+        else:
+            input("Invalid input, press enter to continue.")
+            continue
 
-    if choice == '1':
-        query = "SELECT * FROM USER;"
-    elif choice == '2':
-        query = "SELECT * FROM POST;"
-    elif choice == '3':
-        query = "SELECT * FROM STORIES;"
-    elif choice == '4':
-        query = "SELECT * FROM MESSAGE;"
-    elif choice == '5':
-        query = "SELECT * FROM PROFILE;"
-    elif choice == '6':
-        query = "SELECT * FROM EDUCATION;"
-    # Pages and subclasses
-    elif choice == '7':
-        query = "SELECT PAGE.page_id, PAGE.page_name, PAGE.owner_id, COUNT(LIKES.user_id) AS Number_of_Likes FROM PAGE LEFT OUTER JOIN LIKES ON PAGE.page_id = LIKES.page_id GROUP BY page_id"
-    elif choice == '8':
-        query = "SELECT * FROM BUSINESS_PLACE;"
-    elif choice == '9':
-        query = "SELECT * FROM PROD_BP;"
-    elif choice == '10':
-        query = "SELECT * FROM COMPANY;"
-    elif choice == '11':
-        query = "SELECT * FROM BRANCH_COMPANY;"
-    elif choice == '12':
-        query = "SELECT * FROM BRAND_PRODUCT;"
-    elif choice == '13':
-        query = "SELECT * FROM PUBLIC_FIGURE;"
-    elif choice == '14':
-        query = "SELECT * FROM NEWS_PUB_FIG;"
-    elif choice == '15':
-        query = "SELECT * FROM ENTERTAINMENT"
-    elif choice == '16':
-        query = "SELECT * FROM CAUSE_COMMUNITY"
-    # Pages over
-    elif choice == '17':
-        query = "SELECT social_media.GROUP.group_id, social_media.GROUP.group_name, social_media.GROUP.group_privacy, COUNT(BELONGS_TO.user_id) AS Number_of_Members FROM social_media.GROUP INNER JOIN BELONGS_TO ON social_media.GROUP.group_id = BELONGS_TO.group_id GROUP BY group_id"
-    # Relationships
-    elif choice == '18':
-        query = "SELECT * FROM COMMENTS;"
-    elif choice == '19':
-        query = "SELECT * FROM FOLLOWS;"
-    elif choice == '20':
-        query = "SELECT * FROM MAKES_GENERAL_REACT;"
-    elif choice == '21':
-        query = "SELECT * FROM LIKES"
-    elif choice == '22':
-        query = "SELECT * FROM BELONGS_TO"
-    elif choice == '23':
-        query = "SELECT * FROM IS_ADMIN"
-    elif choice == '24':
-        query = "SELECT * FROM IS_MODERATOR"
-    elif choice == '25':
-        query = "SELECT * FROM MAKES_A_REACT;"
-    elif choice == '26':
-        query = "SELECT * FROM MENTIONS;"
-    elif choice == '27':
-        query = "SELECT * FROM SENDS_SPECIFIC;"
-    elif choice == '28':
-        query = "SELECT * FROM SENDS_GENERAL"
-    elif choice == '29':
-        query = "SELECT * FROM RESPONDS"
-    elif choice == '30':
-        query = "SELECT * FROM SHARES"
-    elif choice == '31':
-        query = "SELECT * FROM IS_TAGGED;"
-    else:
-        print("You have entered an invalid option.")
-
-    try:
-        no_of_rows = cur.execute(query)
-    except Exception as e:
-        print(e)
-        print("\n\nError!\n")
-        return
-    
-    rows = cur.fetchall()
-    viewTable(rows)
-    con.commit()
-
+        try:
+            no_of_rows = cur.execute(query)
+            con.commit()
+            rows = cur.fetchall()
+            viewTable(rows)
+            # print(rows)
+        except Exception as e:
+            con.rollback()
+            print(e)
+            print("\n\nError!\n")
+        input("Press enter to continue.")
 
 
 def addUser():
@@ -748,17 +852,19 @@ def addUser():
     user["email"] = input("Please provide the email id of the user: ")
     user["password"] = input("Please provide the password: ")
     user["address"] = input("Please provide the address: ")
-    user["phone"] = input("Please enter the phone number [without space or hyphen]: ")
+    user["phone"] = input(
+        "Please enter the phone number [without space or hyphen]: ")
 
     try:
-        query = "INSERT INTO USER VALUES(NULL, '%s','%s','%s','%s',%s, '00:00:00');" %(user["password"],user["name"],user["email"],user["address"],user["phone"])   
+        query = "INSERT INTO USER VALUES(NULL, '%s','%s','%s','%s',%s, '00:00:00');" % (
+            user["password"], user["name"], user["email"], user["address"], user["phone"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
-   
+
 
 def addProfile():
     print("Enter the profile details of the user below.\n")
@@ -773,16 +879,19 @@ def addProfile():
     #     print("Something went wrong")
     profile['user_id'] = input("Enter user id of the user: ")
     profile['dob'] = input("Enter Date-of-Birth in YYYY-MM-DD format: ")
-    profile['sex'] = input("Enter sex of the use [Male, Female, Others, PreferNotToSay]: ")
+    profile['sex'] = input(
+        "Enter sex of the use [Male, Female, Others, PreferNotToSay]: ")
 
     try:
-        query = "INSERT INTO PROFILE VALUES (%s,'%s','%s');" %(profile["user_id"],profile["dob"],profile["sex"])
+        query = "INSERT INTO PROFILE VALUES (%s,'%s','%s');" % (
+            profile["user_id"], profile["dob"], profile["sex"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addPost():
     global cur
@@ -792,9 +901,10 @@ def addPost():
     post['time'] = getCurrentTimeStamp()
     post['text'] = input("Enter the post text: ")
     post['media'] = input("Enter the link to the associated with the post: ")
-    
+
     try:
-        query = "INSERT INTO POST VALUES (NULL, '%s', '%s', '%s', %s);" %(post["time"], post["text"], post["media"], post["user_id"])
+        query = "INSERT INTO POST VALUES (NULL, '%s', '%s', '%s', %s);" % (
+            post["time"], post["text"], post["media"], post["user_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -811,12 +921,13 @@ def addComment():
     row["media"] = input("Enter the link to the media: ")
 
     # Reminder: Do the following check in all valid places.
-    if len(row["text"]) == 0 and len (row["media"]) == 0:
+    if len(row["text"]) == 0 and len(row["media"]) == 0:
         print("You can't make an empty comment!")
         return
 
     try:
-        query = "INSERT INTO COMMENT VALUES(NULL, '%s', '%s', '%s');" %(row["time"], row["text"], row["media"])
+        query = "INSERT INTO COMMENT VALUES(NULL, '%s', '%s', '%s');" % (
+            row["time"], row["text"], row["media"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -833,12 +944,13 @@ def addStory():
     row["media"] = input("Enter the link to media shared in the story: ")
     row["user_id"] = input("Enter the ID of the user who made this story: ")
 
-    if len(row["text"]) == 0 and len (row["media"]) == 0:
+    if len(row["text"]) == 0 and len(row["media"]) == 0:
         print("You can't make an empty story with no text and no media!")
         return
 
     try:
-        query = "INSERT INTO STORIES VALUES(NULL, '%s', '%s', '%s', %s);" % (row["time"], row["text"], row["media"], row["user_id"])
+        query = "INSERT INTO STORIES VALUES(NULL, '%s', '%s', '%s', %s);" % (
+            row["time"], row["text"], row["media"], row["user_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -853,37 +965,43 @@ def addMessage():
     row["text"] = input("Enter the message: ")
 
     try:
-        query = 'INSERT INTO MESSAGE VALUES(NULL, "%s");' % (row["text"]);
+        query = 'INSERT INTO MESSAGE VALUES(NULL, "%s");' % (row["text"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addEducation():
     global cur
     row = {}
     row["user_id"] = input("Enter the ID of the user: ")
-    row["education"] = input("Enter an educational qualification of the user: ")
+    row["education"] = input(
+        "Enter an educational qualification of the user: ")
 
     try:
-        query = "INSERT INTO EDUCATION VALUES(%s, '%s');" % (row["user_id"], row["education"])
+        query = "INSERT INTO EDUCATION VALUES(%s, '%s');" % (
+            row["user_id"], row["education"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
-    
+
+
 def addGroup():
     global cur
     row = {}
     row["group_name"] = input("Enter the name of the new group: ")
-    row["group_privacy"] = input("Enter the privacy setting of the new group [Public, Private, Secret]: ")
+    row["group_privacy"] = input(
+        "Enter the privacy setting of the new group [Public, Private, Secret]: ")
 
     try:
-        query = "INSERT INTO social_media.GROUP VALUES(NULL, '%s', '%s'); " % (row["group_name"], row["group_privacy"])
+        query = "INSERT INTO social_media.GROUP VALUES(NULL, '%s', '%s'); " % (
+            row["group_name"], row["group_privacy"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -899,7 +1017,8 @@ def addPage():
     row["owner_id"] = input("Enter the user ID of the owner: ")
 
     try:
-        query = "INSERT INTO PAGE VALUES(NULL, '%s', '%s'); " % (row["page_name"], row["owner_id"])
+        query = "INSERT INTO PAGE VALUES(NULL, '%s', '%s'); " % (
+            row["page_name"], row["owner_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -907,15 +1026,18 @@ def addPage():
         print(e)
         print("Error: Check your inputs.")
 
+
 def addBusinessPlace():
     global cur
     row = {}
     row["page_id"] = input("Enter the ID of the page: ")
-    row["owner_name"] = input("Enter the name of the stake holder of this business: ")
+    row["owner_name"] = input(
+        "Enter the name of the stake holder of this business: ")
     row["location"] = input("Enter the location: ")
 
     try:
-        query = "INSERT INTO BUSINESS_PLACE VALUES(%s, '%s', '%s');" % (row["page_id"], row["owner_name"], row["location"])
+        query = "INSERT INTO BUSINESS_PLACE VALUES(%s, '%s', '%s');" % (
+            row["page_id"], row["owner_name"], row["location"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -932,13 +1054,15 @@ def addProductInBusinessPlace():
     row["price"] = input("Enter the name price of the product: ")
 
     try:
-        query = "INSERT INTO PROD_BP VALUES('%s', '%s', %s);" % (row["page_id"], row["name"], row["price"])
+        query = "INSERT INTO PROD_BP VALUES('%s', '%s', %s);" % (
+            row["page_id"], row["name"], row["price"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addBrandProduct():
     global cur
@@ -948,13 +1072,15 @@ def addBrandProduct():
     row["cust_service"] = input("Enter the customer care number: ")
 
     try:
-        query = "INSERT INTO BRAND_PRODUCT VALUES(%s, '%s', %s);" %(row["page_id"], row["website"], row["cust_service"])
+        query = "INSERT INTO BRAND_PRODUCT VALUES(%s, '%s', %s);" % (
+            row["page_id"], row["website"], row["cust_service"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addCompany():
     global cur
@@ -963,13 +1089,15 @@ def addCompany():
     row["work_domain"] = input("Enter the work domain: ")
 
     try:
-        query = "INSERT INTO COMPANY VALUES(%s, '%s');"% (row["page_id"], row["work_domain"])
+        query = "INSERT INTO COMPANY VALUES(%s, '%s');" % (
+            row["page_id"], row["work_domain"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addBranchCompany():
     global cur
@@ -978,13 +1106,15 @@ def addBranchCompany():
     row["branch"] = input("Enter the branch of a company: ")
 
     try:
-        query = "INSERT INTO BRANCH_COMPANY VALUES(%s, '%s');" % (row["page_id"], row["branch"])
+        query = "INSERT INTO BRANCH_COMPANY VALUES(%s, '%s');" % (
+            row["page_id"], row["branch"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addPublicFigure():
     global cur
@@ -994,13 +1124,15 @@ def addPublicFigure():
     row["field"] = input("Enter the field: ")
 
     try:
-        query = "INSERT INTO PUBLIC_FIGURE VALUES(%s, '%s', '%s');" % (row["page_id"], row["name"], row["field"])
+        query = "INSERT INTO PUBLIC_FIGURE VALUES(%s, '%s', '%s');" % (
+            row["page_id"], row["name"], row["field"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addNewsOfPublicFigure():
     global cur
@@ -1010,13 +1142,15 @@ def addNewsOfPublicFigure():
     row["published_time"] = getCurrentTimeStamp()
 
     try:
-        query = "INSERT INTO NEWS_PUB_FIG VALUES(%s, '%s', '%s'); " % (row["page_id"], row["news"], row["published_time"])
+        query = "INSERT INTO NEWS_PUB_FIG VALUES(%s, '%s', '%s'); " % (
+            row["page_id"], row["news"], row["published_time"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addEntertainment():
     global cur
@@ -1026,13 +1160,15 @@ def addEntertainment():
     row["audience"] = input("Enter the intended audience: ")
 
     try:
-        query = "INSERt INTO ENTERTAINMENT VALUES(%s, '%s', '%s'); " % (row["page_id"], row["events"], row["audience"])
+        query = "INSERt INTO ENTERTAINMENT VALUES(%s, '%s', '%s'); " % (
+            row["page_id"], row["events"], row["audience"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addCauseCommunity():
     global cur
@@ -1042,7 +1178,8 @@ def addCauseCommunity():
     row["activities"] = input("Enter the activities by this community: ")
 
     try:
-        query = "INSERT INTO CAUSE_COMMUNITY VALUES(%s, '%s', '%s');" % (row["page_id"], row["goal"], row["activities"])
+        query = "INSERT INTO CAUSE_COMMUNITY VALUES(%s, '%s', '%s');" % (
+            row["page_id"], row["goal"], row["activities"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1057,20 +1194,24 @@ def addCauseCommunity():
 #         return False
 #     return True
 
+
 def addFollows():
     global cur
 
     row = {}
-    row["follower_id"] = input("Enter user ID of the person that wants to follow someone: ")
+    row["follower_id"] = input(
+        "Enter user ID of the person that wants to follow someone: ")
     # if isValidUserID(row["follower_id"]) == False:
     #     print("Invalid user_id")
     #     return
-    row["following_id"] = input("Enter the user ID of the person that will be followed by the former person: ")
+    row["following_id"] = input(
+        "Enter the user ID of the person that will be followed by the former person: ")
     # if isValidUserID(row["follower_id"]) == False:
     #     print("Invalid user_id")
     #     return
     try:
-        query = "INSERT INTO FOLLOWS(follower_id, following_id) VALUES(%s, %s);" % (row["follower_id"], row["following_id"])
+        query = "INSERT INTO FOLLOWS(follower_id, following_id) VALUES(%s, %s);" % (
+            row["follower_id"], row["following_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1106,29 +1247,30 @@ def addMakesGeneralReact():
         print("Invalid react Type")
 
     if reactNum == 1:
-        row["reactedType"]="Like"
+        row["reactedType"] = "Like"
     elif reactNum == 2:
-        row["reactedType"]="Dislike"
+        row["reactedType"] = "Dislike"
     elif reactNum == 3:
-        row["reactedType"]="Wow"
+        row["reactedType"] = "Wow"
     elif reactNum == 4:
-        row["reactedType"]="Heart"
+        row["reactedType"] = "Heart"
     elif reactNum == 5:
-        row["reactedType"]="Angry"
+        row["reactedType"] = "Angry"
     elif reactNum == 6:
-        row["reactedType"]="Haha"
-    else :
+        row["reactedType"] = "Haha"
+    else:
         print("Invalid react Type")
         return
     try:
         query = "INSERT INTO MAKES_GENERAL_REACT(post_id, user_id, reacted_type) VALUES(%s, %s, '%s');" % (
-            row["post_id"], row["user_id"],row["reactedType"])
+            row["post_id"], row["user_id"], row["reactedType"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addLikes():
     global cur
@@ -1148,32 +1290,41 @@ def addLikes():
         print(e)
         print("Error: Check your inputs.")
 
+
 def addUserToGroup():
     global cur
     row = {}
-    row["user_id"] = input("Enter the ID of the user who wants to join a group: ")
-    row["group_id"] = input("Enter the ID of the group that the user wants to join: ")
+    row["user_id"] = input(
+        "Enter the ID of the user who wants to join a group: ")
+    row["group_id"] = input(
+        "Enter the ID of the group that the user wants to join: ")
     try:
-        query = "INSERT INTO BELONGS_TO VALUES(%s, %s);" % (row["user_id"], row["group_id"])
+        query = "INSERT INTO BELONGS_TO VALUES(%s, %s);" % (
+            row["user_id"], row["group_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def makeUserAdmin():
     global cur
     row = {}
-    row["user_id"] = input("Enter the ID of the user to make him an admin of a group: ")
-    row["group_id"] = input("Enter the ID of the group for which user should be made an admin of: ")
+    row["user_id"] = input(
+        "Enter the ID of the user to make him an admin of a group: ")
+    row["group_id"] = input(
+        "Enter the ID of the group for which user should be made an admin of: ")
     # Don't we have to check if the user is a member of the group?
-    query = "SELECT * FROM BELONGS_TO where group_id=%s and user_id=%s;" % (row["group_id"], row["user_id"])
+    query = "SELECT * FROM BELONGS_TO where group_id=%s and user_id=%s;" % (
+        row["group_id"], row["user_id"])
     if isNonEmptyQuery(query) == False:
         print("User doesn't belong to the group or invalid query.")
         return
     try:
-        query = "INSERT INTO IS_ADMIN VALUES(%s, %s);" % (row["user_id"], row["group_id"])
+        query = "INSERT INTO IS_ADMIN VALUES(%s, %s);" % (
+            row["user_id"], row["group_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1181,30 +1332,37 @@ def makeUserAdmin():
         print(e)
         print("Error: Check your inputs.")
 
+
 def makeUserModerator():
     global cur
     row = {}
-    row["user_id"] = input("Enter the ID of the user to make him an moderator of a group: ")
-    row["group_id"] = input("Enter the ID of the group for which user should be made an moderator of: ")
+    row["user_id"] = input(
+        "Enter the ID of the user to make him an moderator of a group: ")
+    row["group_id"] = input(
+        "Enter the ID of the group for which user should be made an moderator of: ")
     # Don't we have to check if the user is a member of the group?
-    query = "SELECT * FROM BELONGS_TO where group_id=%s and user_id=%s;" % (row["group_id"], row["user_id"])
+    query = "SELECT * FROM BELONGS_TO where group_id=%s and user_id=%s;" % (
+        row["group_id"], row["user_id"])
     if isNonEmptyQuery(query) == False:
         print("User doesn't belong to the group or invalid query.")
         return
     try:
-        query = "INSERT INTO IS_MODERATOR VALUES(%s, %s);" % (row["user_id"], row["group_id"])
+        query = "INSERT INTO IS_MODERATOR VALUES(%s, %s);" % (
+            row["user_id"], row["group_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def makeReactionToAComment():
     global cur
     row = {}
     row["user_id"] = input("Enter the ID of the user who made the reaction: ")
-    row["comment_id"] = input("Enter the ID of the comment in which the reaction was made: ")
+    row["comment_id"] = input(
+        "Enter the ID of the comment in which the reaction was made: ")
     print("Choose the react type by pressing the corresponding number")
     print("1 . Like")
     print("2 . Dislike")
@@ -1219,24 +1377,24 @@ def makeReactionToAComment():
         print("Invalid react Type")
 
     if reactNum == 1:
-        row["reactedType"]="Like"
+        row["reactedType"] = "Like"
     elif reactNum == 2:
-        row["reactedType"]="Dislike"
+        row["reactedType"] = "Dislike"
     elif reactNum == 3:
-        row["reactedType"]="Wow"
+        row["reactedType"] = "Wow"
     elif reactNum == 4:
-        row["reactedType"]="Heart"
+        row["reactedType"] = "Heart"
     elif reactNum == 5:
-        row["reactedType"]="Angry"
+        row["reactedType"] = "Angry"
     elif reactNum == 6:
-        row["reactedType"]="Haha"
-    else :
+        row["reactedType"] = "Haha"
+    else:
         print("Invalid react Type")
         return
 
     try:
         query = "INSERT INTO MAKES_A_REACT(comment_id, user_id, reacted_type) VALUES(%s, %s, '%s');" % (
-            row["comment_id"], row["user_id"],row["reactedType"])
+            row["comment_id"], row["user_id"], row["reactedType"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1244,18 +1402,21 @@ def makeReactionToAComment():
         print(e)
         print("Error: Check your inputs.")
 
+
 def mentionInComment():
     global cur
     row = {}
     row["comment_id"] = input("Enter the ID of the comment: ")
-    row["mentioner_id"] = input("Enter the ID of the user who mentioned someone: ")
+    row["mentioner_id"] = input(
+        "Enter the ID of the user who mentioned someone: ")
     row["mentionee_id"] = input("Enter the ID of the user who got mentioned: ")
     if checkCommentIntegrity(row["comment_id"], row["mentioner_id"]) == False:
         print("Error: Comment was not created by the user who mentioned.")
         return
 
     try:
-        query = "INSERT INTO MENTIONS VALUES(%s, %s, %s);" % (row["mentioner_id"], row["mentionee_id"], row["comment_id"])
+        query = "INSERT INTO MENTIONS VALUES(%s, %s, %s);" % (
+            row["mentioner_id"], row["mentionee_id"], row["comment_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1269,16 +1430,19 @@ def addCommmentsRelations():
     row = {}
     row["comment_id"] = input("Enter the ID of the comment: ")
     row["user_id"] = input("Enter the ID of the user who made the comment: ")
-    row["post_id"] = input("Enter the ID of the post in which the comment is made: ")
+    row["post_id"] = input(
+        "Enter the ID of the post in which the comment is made: ")
 
     try:
-        query = "INSERT INTO COMMENTS VALUES(%s, %s, %s);" % (row["comment_id"], row["user_id"], row["post_id"])
+        query = "INSERT INTO COMMENTS VALUES(%s, %s, %s);" % (
+            row["comment_id"], row["user_id"], row["post_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addSendsSpecific(message_id):
     global cur
@@ -1288,13 +1452,15 @@ def addSendsSpecific(message_id):
     # row["message_id"] = input("Enter the ID of the message: ")
 
     try:
-        query = "INSERT INTO SENDS_SPECIFIC VALUES(%s, %s, %d);" % (row["sender_id"], row["receiver_id"], message_id)
+        query = "INSERT INTO SENDS_SPECIFIC VALUES(%s, %s, %d);" % (
+            row["sender_id"], row["receiver_id"], message_id)
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addSendsGeneral(message_id):
     global cur
@@ -1307,7 +1473,8 @@ def addSendsGeneral(message_id):
         return
 
     try:
-        query = "INSERT INTO SENDS_GENERAL VALUES(%s, %s, %d); " % (row["sender_id"], row["group_id"], message_id)
+        query = "INSERT INTO SENDS_GENERAL VALUES(%s, %s, %d); " % (
+            row["sender_id"], row["group_id"], message_id)
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1315,10 +1482,12 @@ def addSendsGeneral(message_id):
         print(e)
         print("Error: Check your inputs.")
 
+
 def addResponds():
     global cur
     row = {}
-    row["reacter_id"] = input("Enter the ID of the user who reacts to the story: ")
+    row["reacter_id"] = input(
+        "Enter the ID of the user who reacts to the story: ")
     row["story_id"] = input("Enter the ID of the story: ")
     print("Choose the react type by entering the corresponding number")
     print("1. Like")
@@ -1327,36 +1496,38 @@ def addResponds():
     print("4. Heart")
     print("5. Angry")
     print("6. Haha")
-    reactNum = 123 # A random invalid number
+    reactNum = 123  # A random invalid number
     try:
         reactNum = int(input())
     except:
         print("Invalid react Type")
 
     if reactNum == 1:
-        row["reactedType"]="Like"
+        row["reactedType"] = "Like"
     elif reactNum == 2:
-        row["reactedType"]="Dislike"
+        row["reactedType"] = "Dislike"
     elif reactNum == 3:
-        row["reactedType"]="Wow"
+        row["reactedType"] = "Wow"
     elif reactNum == 4:
-        row["reactedType"]="Heart"
+        row["reactedType"] = "Heart"
     elif reactNum == 5:
-        row["reactedType"]="Angry"
+        row["reactedType"] = "Angry"
     elif reactNum == 6:
-        row["reactedType"]="Haha"
-    else :
+        row["reactedType"] = "Haha"
+    else:
         print("Invalid react Type")
         return
 
     try:
-        query = "INSERT INTO RESPONDS VALUES(%s, %s,'%s');" %(row["reacter_id"], row["story_id"], row["reactedType"]) 
+        query = "INSERT INTO RESPONDS VALUES(%s, %s,'%s');" % (
+            row["reacter_id"], row["story_id"], row["reactedType"])
         cur.execute(query)
         con.commit()
     except Exception as e:
         con.rollback()
         print(e)
         print("Error: Check your inputs.")
+
 
 def addShares():
     global cur
@@ -1370,7 +1541,8 @@ def addShares():
         return
 
     try:
-        query = "INSERT INTO SHARES VALUES(%s, %s, %s);" %(row["user_id"], row["group_id"], row["post_id"])
+        query = "INSERT INTO SHARES VALUES(%s, %s, %s);" % (
+            row["user_id"], row["group_id"], row["post_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1378,14 +1550,17 @@ def addShares():
         print(e)
         print("Error: Check your inputs.")
 
+
 def addIsTagged():
     global cur
     row = {}
     row["post_id"] = input("Enter the ID of the post: ")
-    row["user_id"] = input("Enter the ID of the user who is tagged in the post: ")
+    row["user_id"] = input(
+        "Enter the ID of the user who is tagged in the post: ")
 
     try:
-        query = "INSERT INTO IS_TAGGED VALUES(%s, %s); " %(row["user_id"], row["post_id"])
+        query = "INSERT INTO IS_TAGGED VALUES(%s, %s); " % (
+            row["user_id"], row["post_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1458,6 +1633,7 @@ def showPostRelatedOptions():
             continue
         input("Press enter to Continue.")
 
+
 def showGroupRelatedOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
@@ -1495,15 +1671,14 @@ def showGroupRelatedOptions():
             input("Invalid input, press enter to continue.")
             continue
         input("Press enter to continue.")
-    
-        
+
 
 def showUserToUserOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
         refreshDatabase()
         print("Choose an option from below: ")
-        print("1. Follow someone. ") 
+        print("1. Follow someone. ")
         print("2. Send a message to a user. ")
         print("42. Go back.")
         n = input("Enter: ")
@@ -1528,7 +1703,7 @@ def showStoryOptions():
         tmp = sp.call('clear', shell=True)
         refreshDatabase()
         print("Choose an option from below: ")
-        print("1. Create a new story. ") 
+        print("1. Create a new story. ")
         print("2. Respond to a story. ")
         print("42. Go back.")
         n = input("Enter: ")
@@ -1554,11 +1729,11 @@ def showPageOptions():
         print("3. Make a page for brand product.")
         print("4. Make a page for business place.")
         print("5. Insert a product in a business place page.")
-        print("6. Make a page for entertainment.") 
+        print("6. Make a page for entertainment.")
         print("7. Make a page for cause communities.")
         print("8. Make a page for public figures.")
         print("9. Insert a related news in a public figure's page.")
-        print("10. Make a page for company.") 
+        print("10. Make a page for company.")
         print("11. Insert a branch in a page for a company.")
         print("42. Go back.")
         n = input("Enter: ")
@@ -1691,7 +1866,6 @@ def viewTableDel(choice):
     return
 
 
-
 def delOptions():
     while(1):
         print("Select from the options below :")
@@ -1720,48 +1894,50 @@ def delOptions():
             print(e)
             return
 
-        if optn==1 :
+        if optn == 1:
             delUser()
-        elif optn==2:
+        elif optn == 2:
             unFollow()
-        elif optn==3:
+        elif optn == 3:
             delPost()
-        elif optn==4:
+        elif optn == 4:
             delComment()
-        elif optn==5:
+        elif optn == 5:
             delMessage()
-        elif optn==6:
+        elif optn == 6:
             delStory()
-        elif optn==7:
+        elif optn == 7:
             generalUnreact()
-        elif optn==8:
+        elif optn == 8:
             unReact()
-        elif optn==9:
+        elif optn == 9:
             unRespond()
-        elif optn==10:
+        elif optn == 10:
             unLike()
-        elif optn==11:
+        elif optn == 11:
             exitGroup()
-        elif optn==12:
+        elif optn == 12:
             unAdmin()
-        elif optn==13:
+        elif optn == 13:
             unModerator()
-        elif optn==14:
+        elif optn == 14:
             unTag()
-        elif optn==15:
+        elif optn == 15:
             unMention()
-        elif optn==42:
+        elif optn == 42:
             return
         else:
             print("Oops! Choose an option between 1 to 15")
         return
 
 ################# Entities ###################
+
+
 def delUser():
     global cur
     viewTableDel('1')
     user_id = input("Enter the User ID of the User to be removed: ")
-    try :
+    try:
         user_id = int(user_id)
     except Exception as e:
         print(e)
@@ -1781,11 +1957,12 @@ def delUser():
     viewTableDel('1')
     return
 
+
 def delComment():
     global cur
     viewTableDel('18')
     comment_id = input("Enter the Comment ID of the Comment to be removed: ")
-    try :
+    try:
         comment_id = int(comment_id)
     except Exception as e:
         print(e)
@@ -1803,11 +1980,12 @@ def delComment():
     viewTableDel('18')
     return
 
+
 def delPost():
     global cur
     viewTableDel('2')
     post_id = input("Enter the Post ID of the Post you to be removed: ")
-    try :
+    try:
         post_id = int(post_id)
     except Exception as e:
         print(e)
@@ -1825,11 +2003,12 @@ def delPost():
     viewTableDel('2')
     return
 
+
 def delMessage():
     global cur
     viewTableDel('4')
     message_id = input("Enter the Message ID of the Message to be removed: ")
-    try :
+    try:
         message_id = int(message_id)
     except Exception as e:
         print(e)
@@ -1847,11 +2026,12 @@ def delMessage():
     viewTableDel('4')
     return
 
+
 def delStory():
     global cur
     viewTableDel('3')
     story_id = input("Enter the Story ID of the Story to be removed: ")
-    try :
+    try:
         story_id = int(story_id)
     except Exception as e:
         print(e)
@@ -1869,11 +2049,12 @@ def delStory():
     viewTableDel('3')
     return
 
+
 def delPage():
     global cur
     viewTableDel('7')
     page_id = input("Enter the Page ID of the Page to be removed: ")
-    try :
+    try:
         page_id = int(page_id)
     except Exception as e:
         print(e)
@@ -1899,15 +2080,16 @@ def unFollow():
     viewTableDel('19')
     follower_id = input("Enter the Follower's User Id: ")
     following_id = input("Enter the User ID of the user to be unfollowed: ")
-    try :
+    try:
         follower_id = int(follower_id)
         following_id = int(following_id)
-    except :
+    except:
         print("Invalid Page ID")
         print("\n\nError!\n")
         return
 
-    query = "DELETE FROM FOLLOWS WHERE follower_id='%d' AND following_id = %d;" % (follower_id,following_id)
+    query = "DELETE FROM FOLLOWS WHERE follower_id='%d' AND following_id = %d;" % (
+        follower_id, following_id)
     try:
         cur.execute(query)
         con.commit()
@@ -1918,12 +2100,13 @@ def unFollow():
     viewTableDel('19')
     return
 
+
 def generalUnreact():
     global cur
     viewTableDel('20')
     user_id = input("Enter the Reacting User Id: ")
     post_id = input("Enter the Post ID of the Post to be unreacted: ")
-    try :
+    try:
         user_id = int(user_id)
         post_id = int(post_id)
     except Exception as e:
@@ -1931,7 +2114,8 @@ def generalUnreact():
         print("\n\nError!\n")
         return
 
-    query = "DELETE FROM MAKES_GENERAL_REACT WHERE user_id='%d' AND post_id = %d;" % (user_id,post_id)
+    query = "DELETE FROM MAKES_GENERAL_REACT WHERE user_id='%d' AND post_id = %d;" % (
+        user_id, post_id)
     try:
         cur.execute(query)
         con.commit()
@@ -1942,19 +2126,21 @@ def generalUnreact():
     viewTableDel('20')
     return
 
+
 def unLike():
     global cur
     viewTableDel('21')
     user_id = input("Enter the User Id of the User who wants to unlike: ")
     page_id = input("Enter the Page ID of the Page to be unliked: ")
-    try :
+    try:
         user_id = int(user_id)
         page_id = int(page_id)
     except Exception as e:
         print(e)
         print("\n\nError!\n")
         return
-    query = "DELETE FROM FOLLOWS LIKES WHERE user_id='%d' AND page_id = %d;" % (user_id,page_id)
+    query = "DELETE FROM FOLLOWS LIKES WHERE user_id='%d' AND page_id = %d;" % (
+        user_id, page_id)
     try:
         cur.execute(query)
         con.commit()
@@ -1965,21 +2151,25 @@ def unLike():
     viewTableDel('21')
     return
 
+
 def exitGroup():
     global cur
     viewTableDel('22')
     user_id = input("Enter the User ID of the User who wants to exit: ")
     group_id = input("Enter the Group ID of the Group: ")
-    try :
+    try:
         user_id = int(user_id)
         group_id = int(group_id)
     except Exception as e:
         print(e)
         print("\n\nError!\n")
         return
-    query1 = "DELETE FROM BELONGS_TO WHERE user_id='%d' AND group_id = %d;" % (user_id,group_id)
-    query2 = "DELETE FROM IS_ADMIN WHERE user_id='%d' AND group_id = %d;" % (user_id,group_id)
-    query3 = "DELETE FROM IS_MODERATOR WHERE user_id='%d' AND group_id = %d;" % (user_id,group_id)
+    query1 = "DELETE FROM BELONGS_TO WHERE user_id='%d' AND group_id = %d;" % (
+        user_id, group_id)
+    query2 = "DELETE FROM IS_ADMIN WHERE user_id='%d' AND group_id = %d;" % (
+        user_id, group_id)
+    query3 = "DELETE FROM IS_MODERATOR WHERE user_id='%d' AND group_id = %d;" % (
+        user_id, group_id)
     try:
         cur.execute(query1)
         cur.execute(query2)
@@ -1992,19 +2182,21 @@ def exitGroup():
     viewTableDel('22')
     return
 
+
 def unAdmin():
     global cur
     viewTableDel('23')
     user_id = input("Enter the User ID of the User to be removed from Admin: ")
     group_id = input("Enter the Group ID of the Group: ")
-    try :
+    try:
         user_id = int(user_id)
         group_id = int(group_id)
     except Exception as e:
         print(e)
         print("\n\nError!\n")
         return
-    query = "DELETE FROM IS_ADMIN WHERE (user_id='%d') AND (group_id = %d);" % (user_id,group_id)
+    query = "DELETE FROM IS_ADMIN WHERE (user_id='%d') AND (group_id = %d);" % (
+        user_id, group_id)
     try:
         cur.execute(query)
         con.commit()
@@ -2019,16 +2211,18 @@ def unAdmin():
 def unModerator():
     global cur
     viewTableDel('24')
-    user_id = input("Enter the User ID of the User to be removed from moderator: ")
+    user_id = input(
+        "Enter the User ID of the User to be removed from moderator: ")
     group_id = input("Enter the Group ID of the Group: ")
-    try :
+    try:
         user_id = int(user_id)
         group_id = int(group_id)
     except Exception as e:
         print(e)
         print("\n\nError!\n")
         return
-    query = "DELETE FROM IS_MODERATOR WHERE user_id='%d' AND group_id = %d;" % (user_id,group_id)
+    query = "DELETE FROM IS_MODERATOR WHERE user_id='%d' AND group_id = %d;" % (
+        user_id, group_id)
     try:
         cur.execute(query)
         con.commit()
@@ -2039,19 +2233,21 @@ def unModerator():
     viewTableDel('24')
     return
 
+
 def unReact():
     global cur
     viewTableDel('25')
     user_id = input("Enter the Reacting User Id: ")
     comment_id = input("Enter the Comment ID of the Comment to be unreacted: ")
-    try :
+    try:
         user_id = int(user_id)
         comment_id = int(comment_id)
     except Exception as e:
         print(e)
         print("\n\nError!\n")
         return
-    query = "DELETE FROM MAKES_A_REACT WHERE user_id='%d' AND comment_id = %d;" % (user_id,comment_id)
+    query = "DELETE FROM MAKES_A_REACT WHERE user_id='%d' AND comment_id = %d;" % (
+        user_id, comment_id)
     try:
         cur.execute(query)
         con.commit()
@@ -2062,19 +2258,21 @@ def unReact():
     viewTableDel('25')
     return
 
+
 def unMention():
     global cur
     viewTableDel('26')
     comment_id = input("Enter the Comment ID to be unmentioned from: ")
     mentionee_id = input("Enter the User ID to be unmentioned: ")
-    try :
+    try:
         comment_id = int(comment_id)
         mentionee_id = int(mentionee_id)
     except Exception as e:
         print(e)
         print("\n\nError!\n")
         return
-    query = "DELETE FROM MENTIONS WHERE comment_id='%d' AND mentionee_id = %d;" % (comment_id,mentionee_id)
+    query = "DELETE FROM MENTIONS WHERE comment_id='%d' AND mentionee_id = %d;" % (
+        comment_id, mentionee_id)
     try:
         cur.execute(query)
         con.commit()
@@ -2091,14 +2289,15 @@ def unRespond():
     viewTableDel('29')
     story_id = input("Enter the Story ID to unreact: ")
     reacter_id = input("Enter the User ID of the User unreacting: ")
-    try :
+    try:
         story_id = int(story_id)
         reacter_id = int(reacter_id)
     except Exception as e:
         print(e)
         print("\n\nError!\n")
         return
-    query = "DELETE FROM RESPONDS WHERE story_id='%d' AND reacter_id = %d;" % (story_id,reacter_id)
+    query = "DELETE FROM RESPONDS WHERE story_id='%d' AND reacter_id = %d;" % (
+        story_id, reacter_id)
     try:
         cur.execute(query)
         con.commit()
@@ -2109,19 +2308,21 @@ def unRespond():
     viewTableDel('29')
     return
 
+
 def unTag():
     global cur
     viewTableDel('31')
     post_id = input("Enter the Post ID to be untagged from: ")
     user_id = input("Enter the User ID to be untagged: ")
-    try :
+    try:
         post_id = int(post_id)
         user_id = int(user_id)
     except Exception as e:
         print(e)
         print("\n\nError!\n")
         return
-    query = "DELETE FROM IS_TAGGED WHERE user_id='%d' AND post_id = %d;" % (user_id,post_id)
+    query = "DELETE FROM IS_TAGGED WHERE user_id='%d' AND post_id = %d;" % (
+        user_id, post_id)
     try:
         cur.execute(query)
         con.commit()
@@ -2135,6 +2336,7 @@ def unTag():
 ###############################################################################################
 ###############################################################################################
 ######################################### MODIFY ##############################################
+
 
 def updatePost():
     viewTableDel('2')
@@ -2151,7 +2353,8 @@ def updatePost():
     post["text"] = input("Enter the updated text: ")
 
     try:
-        query = "UPDATE POST SET media='%s', text='%s' WHERE post_id='%d'" %(post["media"],post["text"],post["post_id"])
+        query = "UPDATE POST SET media='%s', text='%s' WHERE post_id='%d'" % (
+            post["media"], post["text"], post["post_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2162,12 +2365,14 @@ def updatePost():
     viewTableDel('2')
     return
 
+
 def updateComment():
     viewTableDel('18')
     global cur
     comment = {}
     try:
-        comment["comment_id"] = int(input("Enter the comment id of the comment to be updated: "))
+        comment["comment_id"] = int(
+            input("Enter the comment id of the comment to be updated: "))
     except Exception as e:
         print(e)
         print("Comment ID must be an integer")
@@ -2176,7 +2381,8 @@ def updateComment():
     comment["text"] = input("Enter the updated text of the comment: ")
 
     try:
-        query = "UPDATE COMMENT SET text='%s' WHERE comment_id='%d'" %(comment["text"],comment["comment_id"])
+        query = "UPDATE COMMENT SET text='%s' WHERE comment_id='%d'" % (
+            comment["text"], comment["comment_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2187,23 +2393,26 @@ def updateComment():
     viewTableDel('18')
     return
 
+
 def updateStory():
     viewTableDel('3')
     global cur
     story = {}
 
     try:
-        story["story_id"] = int(input("Enter the story id of the story to be updated: "))
+        story["story_id"] = int(
+            input("Enter the story id of the story to be updated: "))
     except Exception as e:
         print(e)
         print("Story ID must be an integer")
         return
 
     story["text"] = input("Enter the updated text of the story: ")
-    story["media"] =input("Enter the updated media of the story: ")
+    story["media"] = input("Enter the updated media of the story: ")
 
     try:
-        query = "UPDATE STORIES SET text='%s', media='%s' WHERE story_id = '%d'" %(story["text"], story["media"], story["story_id"])
+        query = "UPDATE STORIES SET text='%s', media='%s' WHERE story_id = '%d'" % (
+            story["text"], story["media"], story["story_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2214,13 +2423,15 @@ def updateStory():
     viewTableDel('3')
     return
 
+
 def updatePage():
     viewTableDel('7')
     global cur
     page = {}
 
     try:
-        page["page_id"] = int(input("Enter the page_id of the page to be updated: "))
+        page["page_id"] = int(
+            input("Enter the page_id of the page to be updated: "))
     except Exception as e:
         print(e)
         print("Page ID must be an integer: ")
@@ -2229,7 +2440,8 @@ def updatePage():
     page["page_name"] = input("Enter the updated name of the page: ")
 
     try:
-        query = "UPDATE PAGE SET page_name='%s' WHERE page_id='%s'" %(page["page_name"],page["page_id"])
+        query = "UPDATE PAGE SET page_name='%s' WHERE page_id='%s'" % (
+            page["page_name"], page["page_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2240,14 +2452,17 @@ def updatePage():
     viewTableDel('7')
     return
 
+
 def updateGeneralReact():
     viewTableDel('20')
     global cur
     react = {}
 
     try:
-        react["post_id"] = int(input("Enter the post ID of the post you want to update the react on: "))
-        react["user_id"] = int(input("Enter the user ID of the User whose react you want to change: "))
+        react["post_id"] = int(
+            input("Enter the post ID of the post you want to update the react on: "))
+        react["user_id"] = int(
+            input("Enter the user ID of the User whose react you want to change: "))
     except Exception as e:
         print(e)
         print("Wrong parameters. Try again")
@@ -2267,23 +2482,24 @@ def updateGeneralReact():
         return
 
     if reactNum == 1:
-        react["reactedType"]="Like"
+        react["reactedType"] = "Like"
     elif reactNum == 2:
-        react["reactedType"]="Dislike"
+        react["reactedType"] = "Dislike"
     elif reactNum == 3:
-        react["reactedType"]="Wow"
+        react["reactedType"] = "Wow"
     elif reactNum == 4:
-        react["reactedType"]="Heart"
+        react["reactedType"] = "Heart"
     elif reactNum == 5:
-        react["reactedType"]="Angry"
+        react["reactedType"] = "Angry"
     elif reactNum == 6:
-        react["reactedType"]="Haha"
-    else :
+        react["reactedType"] = "Haha"
+    else:
         print("Invalid react Type")
         return
 
     try:
-        query = "UPDATE MAKES_GENERAL_REACT SET reacted_type='%s' WHERE post_id = '%d' AND user_id='%d'" %(react["reactedType"], react["post_id"], react["user_id"])
+        query = "UPDATE MAKES_GENERAL_REACT SET reacted_type='%s' WHERE post_id = '%d' AND user_id='%d'" % (
+            react["reactedType"], react["post_id"], react["user_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2294,14 +2510,17 @@ def updateGeneralReact():
     viewTableDel('20')
     return
 
+
 def updateMakesReact():
     viewTableDel('25')
     global cur
     react = {}
 
     try:
-        react["comment_id"] = int(input("Enter the comment ID of the comment you want to update the react on: "))
-        react["user_id"] = int(input("Enter the user ID of the user whose react on the comment you want to update: "))
+        react["comment_id"] = int(
+            input("Enter the comment ID of the comment you want to update the react on: "))
+        react["user_id"] = int(input(
+            "Enter the user ID of the user whose react on the comment you want to update: "))
     except Exception as e:
         print(e)
         print("Wrong parameters. Try again")
@@ -2321,23 +2540,24 @@ def updateMakesReact():
         return
 
     if reactNum == 1:
-        react["reactedType"]="Like"
+        react["reactedType"] = "Like"
     elif reactNum == 2:
-        react["reactedType"]="Dislike"
+        react["reactedType"] = "Dislike"
     elif reactNum == 3:
-        react["reactedType"]="Wow"
+        react["reactedType"] = "Wow"
     elif reactNum == 4:
-        react["reactedType"]="Heart"
+        react["reactedType"] = "Heart"
     elif reactNum == 5:
-        react["reactedType"]="Angry"
+        react["reactedType"] = "Angry"
     elif reactNum == 6:
-        react["reactedType"]="Haha"
-    else :
+        react["reactedType"] = "Haha"
+    else:
         print("Invalid react Type")
         return
 
     try:
-        query = "UPDATE MAKES_A_REACT SET reacted_type='%s' WHERE comment_id = '%d' AND user_id='%d'" %(react["reactedType"], react["comment_id"], react["user_id"])
+        query = "UPDATE MAKES_A_REACT SET reacted_type='%s' WHERE comment_id = '%d' AND user_id='%d'" % (
+            react["reactedType"], react["comment_id"], react["user_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2347,6 +2567,7 @@ def updateMakesReact():
 
     viewTableDel('25')
     return
+
 
 def updateResponds():
     viewTableDel('29')
@@ -2354,8 +2575,10 @@ def updateResponds():
     react = {}
 
     try:
-        react["story_id"] = int(input("Enter the Story ID of the Story you want to update the react on: "))
-        react["reacter_id"] = int(input("Enter the user ID of the User whose react on the story you want to update: "))
+        react["story_id"] = int(
+            input("Enter the Story ID of the Story you want to update the react on: "))
+        react["reacter_id"] = int(input(
+            "Enter the user ID of the User whose react on the story you want to update: "))
     except Exception as e:
         print(e)
         print("Wrong parameters. Try again")
@@ -2375,23 +2598,24 @@ def updateResponds():
         return
 
     if reactNum == 1:
-        react["reactedType"]="Like"
+        react["reactedType"] = "Like"
     elif reactNum == 2:
-        react["reactedType"]="Dislike"
+        react["reactedType"] = "Dislike"
     elif reactNum == 3:
-        react["reactedType"]="Wow"
+        react["reactedType"] = "Wow"
     elif reactNum == 4:
-        react["reactedType"]="Heart"
+        react["reactedType"] = "Heart"
     elif reactNum == 5:
-        react["reactedType"]="Angry"
+        react["reactedType"] = "Angry"
     elif reactNum == 6:
-        react["reactedType"]="Haha"
-    else :
+        react["reactedType"] = "Haha"
+    else:
         print("Invalid react Type")
         return
 
     try:
-        query = "UPDATE RESPONDS SET reacted_type='%s' WHERE story_id = '%d' AND reacter_id='%d'" %(react["reactedType"], react["story_id"], react["reacter_id"])
+        query = "UPDATE RESPONDS SET reacted_type='%s' WHERE story_id = '%d' AND reacter_id='%d'" % (
+            react["reactedType"], react["story_id"], react["reacter_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2402,13 +2626,15 @@ def updateResponds():
     viewTableDel('29')
     return
 
+
 def updateGroup():
     viewTableDel('17')
     global cur
     group = {}
 
     try:
-        group["group_id"] = int(input("Enter the group ID of the group you want to update: "))
+        group["group_id"] = int(
+            input("Enter the group ID of the group you want to update: "))
     except Exception as e:
         print(e)
         print("Group ID must be an integer")
@@ -2427,18 +2653,19 @@ def updateGroup():
         print("Invalid Group Privacy Type")
         return
 
-    if groupNum==1:
+    if groupNum == 1:
         group["group_privacy"] = "Public"
-    elif groupNum==2:
+    elif groupNum == 2:
         group["group_privacy"] = "Private"
-    elif groupNum==3:
+    elif groupNum == 3:
         group["group_privacy"] = "Secret"
     else:
         print("Invalid Group Privacy Type")
         return
 
     try:
-        query = "UPDATE social_media.GROUP SET group_name='%s',group_privacy='%s' WHERE group_id='%d'" %(group["group_name"],group["group_privacy"],group["group_id"])
+        query = "UPDATE social_media.GROUP SET group_name='%s',group_privacy='%s' WHERE group_id='%d'" % (
+            group["group_name"], group["group_privacy"], group["group_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2449,22 +2676,26 @@ def updateGroup():
     viewTableDel('17')
     return
 
+
 def updateProfile():
     viewTableDel('5')
     global cur
     profile = {}
 
     try:
-        profile["user_id"] = int(input("Enter the User ID of the profile u want to update: "))
+        profile["user_id"] = int(
+            input("Enter the User ID of the profile u want to update: "))
     except Exception as e:
         print(e)
         print("User ID should be an integer ")
         return
 
-    profile["dob"] = input("Enter the updated Date of Birth in YYYY-MM-DD format ")
+    profile["dob"] = input(
+        "Enter the updated Date of Birth in YYYY-MM-DD format ")
 
     try:
-        query = "UPDATE PROFILE SET date_of_birth='%s' WHERE user_id='%d'" %(profile["dob"],profile["user_id"])
+        query = "UPDATE PROFILE SET date_of_birth='%s' WHERE user_id='%d'" % (
+            profile["dob"], profile["user_id"])
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -2474,6 +2705,7 @@ def updateProfile():
 
     viewTableDel('5')
     return
+
 
 def updatePassword():
     global cur
@@ -2488,7 +2720,7 @@ def updatePassword():
     viewTable(rows)
     con.commit()
 
-    user={}
+    user = {}
     try:
         user['uid'] = int(input("Enter your user ID: "))
     except Exception as e:
@@ -2497,18 +2729,20 @@ def updatePassword():
         return
     user['prev_password'] = input("Enter your previous password: ")
     try:
-        query = "SELECT password FROM USER WHERE user_id = '%d'" %(user['uid'])
+        query = "SELECT password FROM USER WHERE user_id = '%d'" % (
+            user['uid'])
         cur.execute(query)
         prev_pass = cur.fetchone()
         prev_pass = str(prev_pass["password"])
     except Exception as e:
         print(e)
         return
-    #print(prev_pass,user["prev_password"])
+    # print(prev_pass,user["prev_password"])
     if (prev_pass == user["prev_password"]):
-        user["new_password"]= input("Enter your new password: ")
+        user["new_password"] = input("Enter your new password: ")
         try:
-            query = "UPDATE USER SET password = '%s' WHERE user_id = '%d'" %(user["new_password"],user['uid'])
+            query = "UPDATE USER SET password = '%s' WHERE user_id = '%d'" % (
+                user["new_password"], user['uid'])
             cur.execute(query)
             con.commit()
             print("Password changed succesfully!")
@@ -2538,7 +2772,6 @@ def updOptions():
         print("10. Update Password")
         print("42. Go Back")
 
-
         optn = input("Your option is : ")
 
         try:
@@ -2547,27 +2780,27 @@ def updOptions():
             print(e)
             return
 
-        if optn==1 :
+        if optn == 1:
             updatePost()
-        elif optn==2:
+        elif optn == 2:
             updateComment()
-        elif optn==3:
+        elif optn == 3:
             updateStory()
-        elif optn==4:
+        elif optn == 4:
             updatePage()
-        elif optn==5:
+        elif optn == 5:
             updateGeneralReact()
-        elif optn==6:
+        elif optn == 6:
             updateMakesReact()
-        elif optn==7:
+        elif optn == 7:
             updateResponds()
-        elif optn==8:
+        elif optn == 8:
             updateGroup()
-        elif optn==9:
+        elif optn == 9:
             updateProfile()
-        elif optn==10:
+        elif optn == 10:
             updatePassword()
-        elif optn==42:
+        elif optn == 42:
             return
         else:
             print("Oops! Choose an option between 1 to 9")
@@ -2575,21 +2808,23 @@ def updOptions():
 
 ###############################################################################################
 
+
 def refreshDatabase():
     global cur
 
     # Deleting incorrectly entered data in insert function
     # Have to write this function.
-    print("Hello: Refreshing database") #Test printline.
+    print("Hello: Refreshing database")  # Test printline.
+
 
 while(1):
     tmp = sp.call('clear', shell=True)
-    # The two lines below should be uncommented 
+    # The two lines below should be uncommented
     # username = input("Username: ")
     # password = input("Password: ")
 
     username = 'root'
-    password = 'pavani@17'
+    password = 'blahblah'
 
     try:
         con = pymysql.connect(host='127.0.0.1',
@@ -2618,35 +2853,38 @@ while(1):
             tmp = sp.call('clear', shell=True)
             refreshDatabase()
             print("CHOOSE AN OPTION\n")
-            print("1.General View Options")
-            print("2.Insertion Options")
-            print("3.Deletion Options")
-            print("4.Modify Options")
-            print("5.Search")
-            print("6.User-specific View Options and Activity Report Generation")
-            print("7.Show Suggestions")
-            print("8.View Mutual Relationships")
-            print("9.Post-specific View Options")
-            print("10.Comment-specific View Options")
-            print("11.Quit")
+            print("1. General View Options")
+            print("2. Insertion Options")
+            print("3. Deletion Options")
+            print("4. Modify Options")
+            print("5. Search")
+            print("6. User-specific View Options and Activity Report Generation")
+            print("7. Show Suggestions")
+            print("8. View Mutual Relationships")
+            print("9. Post-specific View Options")
+            print("10. Comment-specific View Options")
+            print("11. See weekly report of the user.")
+            print("12. Quit")
             inp = input("\nENTER: ")
             if(inp == '1'):
                 viewOptions()
             elif(inp == '2'):
                 insertionOptions()
-            elif(inp=='5'):
+            elif(inp == '5'):
                 search()
-            elif(inp=='6'):
+            elif(inp == '6'):
                 generateReport()
             elif(inp == '7'):
                 showSuggestions()
             elif(inp == '8'):
                 mutual()
-            elif(inp=='9'):
+            elif(inp == '9'):
                 postListing()
-            elif(inp=='10'):
+            elif(inp == '10'):
                 commentListing()
-            elif(inp == '11'):
+            elif inp == '11':
+                printWeeklyReport()
+            elif(inp == '12'):
                 exitflag = 1
                 print("Exiting.")
                 break
