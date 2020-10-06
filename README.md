@@ -5,8 +5,10 @@ A simple database application designed with miniworld as , with CLI interface, w
 ## Steps to Run
 
 
-mysql -h <local host> -u <username> --port=<port> -p > SocialMediaDB.sql
-python3 app.py
+```shell 
+ mysql -h <local host> -u <username> --port=<port> -p > SocialMediaDB.sql
+ python3 app.py
+```
 
 The `SocialMediaDB.sql` creates the database, the necessary tables and also populates the database with some data. <br>
 The actual CLI application is in `app.py`
