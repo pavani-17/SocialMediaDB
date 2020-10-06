@@ -2789,24 +2789,23 @@ def refreshDatabase():
 while(1):
     tmp = sp.call('clear', shell=True)
     # The two lines below should be uncommented
-    # try :
-    #     username = input("Username: ")
-    #     password = input("Password: ")
-    #     port = int(input("Port: "))
-    # except Exception as e:
-    #     print(e)
-    #     print("Try again")
-    #     continue
-    # username = 'root'
-    # password = 'blahblah'
+    try :
+        username = input("Username: ")
+        password = input("Password: ")
+        port = int(input("Port: "))
+        host = input("Host: ")
+    except Exception as e:
+        print(e)
+        print("Try again")
+        continue
 
     try:
-        con = pymysql.connect(host='127.0.0.1',
-                              user="root",
-                              password="password",
+        con = pymysql.connect(host=host,
+                              user=root,
+                              password=password,
                               db='social_media',
                               cursorclass=pymysql.cursors.DictCursor,
-                              port=5005)
+                              port=port)
     except Exception as excep:
         print(excep)
         tmp = sp.call('clear', shell=True)
