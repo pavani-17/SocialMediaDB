@@ -1,6 +1,6 @@
 # Social Media DB
 
-A simple database application designed with miniworld as , with CLI interface, which allows users to perform all the tasks in an actual social media such as sharing posts, reacting and commenting to posts, update profile details, etc.
+A simple database application designed with miniworld as a social media, with CLI interface, which allows users to perform all the tasks in an actual social media such as sharing posts, reacting and commenting to posts, update profile details, etc.
 
 ## Steps to Run
 
