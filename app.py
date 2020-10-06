@@ -103,10 +103,13 @@ def search():
     elif search_param == 5:
         search_type = "social_media.GROUP"
         search_field = "group_name"
+    else:
+        print("Invalid Domain Error")
+        return
 
     try:
         query = "SELECT * FROM %s WHERE %s REGEXP '%s'" % (
-            search_type, search_field, search_key)
+            search_type, search_field, search_key, )
         r = cur.execute(query)
         if r == 0:
             print("No result found")
@@ -411,11 +414,11 @@ def eventTracker():
                             (SELECT following_id FROM FOLLOWS WHERE follower_id = '%d')
                         AND
                         (date_of_birth REGEXP '%s'));
-                        ''' % (uid, date+'+')
+                        ''' % (uid, date+'+', )
 
         queryposts = '''
                         SELECT * FROM POST WHERE time REGEXP '%s' AND user_id = '%s';
-                     ''' % (date+'+', uid)
+                     ''' % (date+'+', uid, )
 
         r1 = cur.execute(querybirthday)
         print("Birthdays ->")
@@ -1901,7 +1904,7 @@ def delOptions():
             return
         else:
             print("Oops! Choose an option between 1 to 15")
-        return
+
 
 ################# Entities ###################
 
@@ -2316,7 +2319,7 @@ def updatePost():
     global cur
     post = {}
     try:
-        post["post_id"] = int(input("Enter the post id to be updated:"))
+        post["post_id"] = int(input("Enter the post id to be updated: "))
     except Exception as e:
         print(e)
         print("Post ID must be an integer")
@@ -2326,9 +2329,8 @@ def updatePost():
     post["text"] = input("Enter the updated text: ")
 
     try:
-        query = "UPDATE POST SET media='%s', text='%s' WHERE post_id='%d'" % (
-            post["media"], post["text"], post["post_id"])
-        cur.execute(query)
+        query = "UPDATE POST SET media=%(media)s, text=%(text)s WHERE post_id=%(post_id)s;"
+        cur.execute(query, post)
         con.commit()
     except Exception as e:
         print(e)
@@ -2354,9 +2356,8 @@ def updateComment():
     comment["text"] = input("Enter the updated text of the comment: ")
 
     try:
-        query = "UPDATE COMMENT SET text='%s' WHERE comment_id='%d'" % (
-            comment["text"], comment["comment_id"])
-        cur.execute(query)
+        query = "UPDATE COMMENT SET text=%(text)s WHERE comment_id=%(comment_id)s;"
+        cur.execute(query, comment)
         con.commit()
     except Exception as e:
         print(e)
@@ -2384,9 +2385,8 @@ def updateStory():
     story["media"] = input("Enter the updated media of the story: ")
 
     try:
-        query = "UPDATE STORIES SET text='%s', media='%s' WHERE story_id = '%d'" % (
-            story["text"], story["media"], story["story_id"])
-        cur.execute(query)
+        query = "UPDATE STORIES SET text=%(text)s, media=%(media)s WHERE story_id = %(story_id)s;"
+        cur.execute(query, story)
         con.commit()
     except Exception as e:
         print(e)
@@ -2413,9 +2413,8 @@ def updatePage():
     page["page_name"] = input("Enter the updated name of the page: ")
 
     try:
-        query = "UPDATE PAGE SET page_name='%s' WHERE page_id='%s'" % (
-            page["page_name"], page["page_id"])
-        cur.execute(query)
+        query = "UPDATE PAGE SET page_name=%(page_name)s WHERE page_id=%(page_id)s;"
+        cur.execute(query, page)
         con.commit()
     except Exception as e:
         print(e)
@@ -2637,9 +2636,8 @@ def updateGroup():
         return
 
     try:
-        query = "UPDATE social_media.GROUP SET group_name='%s',group_privacy='%s' WHERE group_id='%d'" % (
-            group["group_name"], group["group_privacy"], group["group_id"])
-        cur.execute(query)
+        query = "UPDATE social_media.GROUP SET group_name=%(group_name)s,group_privacy=%(group_privacy)s WHERE group_id=%(group_id)s;"
+        cur.execute(query, group)
         con.commit()
     except Exception as e:
         print(e)
@@ -2667,9 +2665,8 @@ def updateProfile():
         "Enter the updated Date of Birth in YYYY-MM-DD format ")
 
     try:
-        query = "UPDATE PROFILE SET date_of_birth='%s' WHERE user_id='%d'" % (
-            profile["dob"], profile["user_id"])
-        cur.execute(query)
+        query = "UPDATE PROFILE SET date_of_birth=%(dob)s WHERE user_id=%(user_id)s;"
+        cur.execute(query, profile)
         con.commit()
     except Exception as e:
         print(e)
@@ -2682,16 +2679,16 @@ def updateProfile():
 
 def updatePassword():
     global cur
-    query = "SELECT user_id,name,email FROM USER"
-    try:
-        no_of_rows = cur.execute(query)
+    # query = "SELECT user_id,name,email FROM USER"
+    # try:
+    #     no_of_rows = cur.execute(query)
 
-    except Exception as e:
-        print(e)
-        return
-    rows = cur.fetchall()
-    viewTable(rows)
-    con.commit()
+    # except Exception as e:
+    #     print(e)
+    #     return
+    # rows = cur.fetchall()
+    # viewTable(rows)
+    # con.commit()
 
     user = {}
     try:
@@ -2714,9 +2711,8 @@ def updatePassword():
     if (prev_pass == user["prev_password"]):
         user["new_password"] = input("Enter your new password: ")
         try:
-            query = "UPDATE USER SET password = '%s' WHERE user_id = '%d'" % (
-                user["new_password"], user['uid'])
-            cur.execute(query)
+            query = "UPDATE USER SET password = %(new_password)s WHERE user_id = %(uid)s;"
+            cur.execute(query, user)
             con.commit()
             print("Password changed succesfully!")
         except Exception as e:
@@ -2777,7 +2773,7 @@ def updOptions():
             return
         else:
             print("Oops! Choose an option between 1 to 9")
-        return
+
 
 ###############################################################################################
 
@@ -2793,19 +2789,23 @@ def refreshDatabase():
 while(1):
     tmp = sp.call('clear', shell=True)
     # The two lines below should be uncommented
-    # username = input("Username: ")
-    # password = input("Password: ")
-
-    username = 'root'
-    password = 'blahblah'
+    try :
+        username = input("Username: ")
+        password = input("Password: ")
+        port = int(input("Port: "))
+        host = input("Host: ")
+    except Exception as e:
+        print(e)
+        print("Try again")
+        continue
 
     try:
-        con = pymysql.connect(host='127.0.0.1',
-                              user=username,
+        con = pymysql.connect(host=host,
+                              user=root,
                               password=password,
                               db='social_media',
                               cursorclass=pymysql.cursors.DictCursor,
-                              port=5005)
+                              port=port)
     except Exception as excep:
         print(excep)
         tmp = sp.call('clear', shell=True)
@@ -2843,6 +2843,10 @@ while(1):
                 viewOptions()
             elif(inp == '2'):
                 insertionOptions()
+            elif(inp == '3'):
+                delOptions()
+            elif(inp == '4'):
+                updOptions()
             elif(inp == '5'):
                 search()
             elif(inp == '6'):
