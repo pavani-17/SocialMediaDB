@@ -683,10 +683,10 @@ def getCurrentTimeStamp():
     return datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 
 
-def isNonEmptyQuery(query):
+def isNonEmptyQuery(query, row):
     global cur
     try:
-        cur.execute(query)
+        cur.execute(query, row)
         con.commit()
         if cur.rowcount == 0:
             return False
@@ -842,6 +842,8 @@ def viewOptions():
             print("\n\nError!\n")
         input("Press enter to continue.")
 
+# ------------------------------ Insertions Start ----------------------------------------------#
+
 
 def addUser():
     global cur
@@ -856,9 +858,8 @@ def addUser():
         "Please enter the phone number [without space or hyphen]: ")
 
     try:
-        query = "INSERT INTO USER VALUES(NULL, '%s','%s','%s','%s',%s, '00:00:00');" % (
-            user["password"], user["name"], user["email"], user["address"], user["phone"])
-        cur.execute(query)
+        query = "INSERT INTO USER VALUES(NULL, %(password)s, %(name)s, %(email)s, %(address)s, %(phone)s, '00:00:00');"
+        cur.execute(query, user)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -883,9 +884,8 @@ def addProfile():
         "Enter sex of the use [Male, Female, Others, PreferNotToSay]: ")
 
     try:
-        query = "INSERT INTO PROFILE VALUES (%s,'%s','%s');" % (
-            profile["user_id"], profile["dob"], profile["sex"])
-        cur.execute(query)
+        query = "INSERT INTO PROFILE VALUES (%(user_id)s, %(dob)s, %(sex)s);"
+        cur.execute(query, profile)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -903,9 +903,8 @@ def addPost():
     post['media'] = input("Enter the link to the associated with the post: ")
 
     try:
-        query = "INSERT INTO POST VALUES (NULL, '%s', '%s', '%s', %s);" % (
-            post["time"], post["text"], post["media"], post["user_id"])
-        cur.execute(query)
+        query = "INSERT INTO POST VALUES (NULL, %(time)s, %(text)s, %(media)s, %(user_id)s);"
+        cur.execute(query, post)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -926,9 +925,8 @@ def addComment():
         return
 
     try:
-        query = "INSERT INTO COMMENT VALUES(NULL, '%s', '%s', '%s');" % (
-            row["time"], row["text"], row["media"])
-        cur.execute(query)
+        query = "INSERT INTO COMMENT VALUES(NULL, %(time)s, %(text)s, %(media)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -949,9 +947,8 @@ def addStory():
         return
 
     try:
-        query = "INSERT INTO STORIES VALUES(NULL, '%s', '%s', '%s', %s);" % (
-            row["time"], row["text"], row["media"], row["user_id"])
-        cur.execute(query)
+        query = "INSERT INTO STORIES VALUES(NULL, %(time)s, %(text)s, %(media)s, %(user_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -965,8 +962,8 @@ def addMessage():
     row["text"] = input("Enter the message: ")
 
     try:
-        query = 'INSERT INTO MESSAGE VALUES(NULL, "%s");' % (row["text"])
-        cur.execute(query)
+        query = 'INSERT INTO MESSAGE VALUES(NULL, %(text)s);'
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -982,9 +979,8 @@ def addEducation():
         "Enter an educational qualification of the user: ")
 
     try:
-        query = "INSERT INTO EDUCATION VALUES(%s, '%s');" % (
-            row["user_id"], row["education"])
-        cur.execute(query)
+        query = "INSERT INTO EDUCATION VALUES(%(user_id)s, %(education)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1000,9 +996,8 @@ def addGroup():
         "Enter the privacy setting of the new group [Public, Private, Secret]: ")
 
     try:
-        query = "INSERT INTO social_media.GROUP VALUES(NULL, '%s', '%s'); " % (
-            row["group_name"], row["group_privacy"])
-        cur.execute(query)
+        query = "INSERT INTO social_media.GROUP VALUES(NULL, %(group_name)s, %(group_privacy)s); "
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1017,9 +1012,8 @@ def addPage():
     row["owner_id"] = input("Enter the user ID of the owner: ")
 
     try:
-        query = "INSERT INTO PAGE VALUES(NULL, '%s', '%s'); " % (
-            row["page_name"], row["owner_id"])
-        cur.execute(query)
+        query = "INSERT INTO PAGE VALUES(NULL, %(page_name)s, %(owner_id)s); "
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1036,9 +1030,8 @@ def addBusinessPlace():
     row["location"] = input("Enter the location: ")
 
     try:
-        query = "INSERT INTO BUSINESS_PLACE VALUES(%s, '%s', '%s');" % (
-            row["page_id"], row["owner_name"], row["location"])
-        cur.execute(query)
+        query = "INSERT INTO BUSINESS_PLACE VALUES(%(page_id)s, %(owner_name)s, %(location)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1054,9 +1047,8 @@ def addProductInBusinessPlace():
     row["price"] = input("Enter the name price of the product: ")
 
     try:
-        query = "INSERT INTO PROD_BP VALUES('%s', '%s', %s);" % (
-            row["page_id"], row["name"], row["price"])
-        cur.execute(query)
+        query = "INSERT INTO PROD_BP VALUES(%(page_id)s, %(name)s, %(price)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1072,9 +1064,8 @@ def addBrandProduct():
     row["cust_service"] = input("Enter the customer care number: ")
 
     try:
-        query = "INSERT INTO BRAND_PRODUCT VALUES(%s, '%s', %s);" % (
-            row["page_id"], row["website"], row["cust_service"])
-        cur.execute(query)
+        query = "INSERT INTO BRAND_PRODUCT VALUES(%(page_id)s, %(website)s, %(cust_service)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1089,9 +1080,8 @@ def addCompany():
     row["work_domain"] = input("Enter the work domain: ")
 
     try:
-        query = "INSERT INTO COMPANY VALUES(%s, '%s');" % (
-            row["page_id"], row["work_domain"])
-        cur.execute(query)
+        query = "INSERT INTO COMPANY VALUES(%(page_id)s, %(work_domain)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1106,8 +1096,7 @@ def addBranchCompany():
     row["branch"] = input("Enter the branch of a company: ")
 
     try:
-        query = "INSERT INTO BRANCH_COMPANY VALUES(%s, '%s');" % (
-            row["page_id"], row["branch"])
+        query = "INSERT INTO BRANCH_COMPANY VALUES(%(page_id)s, %(branch)s);"
         cur.execute(query)
         con.commit()
     except Exception as e:
@@ -1124,9 +1113,8 @@ def addPublicFigure():
     row["field"] = input("Enter the field: ")
 
     try:
-        query = "INSERT INTO PUBLIC_FIGURE VALUES(%s, '%s', '%s');" % (
-            row["page_id"], row["name"], row["field"])
-        cur.execute(query)
+        query = "INSERT INTO PUBLIC_FIGURE VALUES(%(page_id)s, %(name)s, %(field)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1142,9 +1130,8 @@ def addNewsOfPublicFigure():
     row["published_time"] = getCurrentTimeStamp()
 
     try:
-        query = "INSERT INTO NEWS_PUB_FIG VALUES(%s, '%s', '%s'); " % (
-            row["page_id"], row["news"], row["published_time"])
-        cur.execute(query)
+        query = "INSERT INTO NEWS_PUB_FIG VALUES(%(page_id)s, %(news)s, %(published_time)s); "
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1160,9 +1147,8 @@ def addEntertainment():
     row["audience"] = input("Enter the intended audience: ")
 
     try:
-        query = "INSERt INTO ENTERTAINMENT VALUES(%s, '%s', '%s'); " % (
-            row["page_id"], row["events"], row["audience"])
-        cur.execute(query)
+        query = "INSERT INTO ENTERTAINMENT VALUES(%(page_id)s, %(events)s, %(audience)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1178,9 +1164,8 @@ def addCauseCommunity():
     row["activities"] = input("Enter the activities by this community: ")
 
     try:
-        query = "INSERT INTO CAUSE_COMMUNITY VALUES(%s, '%s', '%s');" % (
-            row["page_id"], row["goal"], row["activities"])
-        cur.execute(query)
+        query = "INSERT INTO CAUSE_COMMUNITY VALUES(%(page_id)s, %(goal)s, %(activities)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1210,9 +1195,8 @@ def addFollows():
     #     print("Invalid user_id")
     #     return
     try:
-        query = "INSERT INTO FOLLOWS(follower_id, following_id) VALUES(%s, %s);" % (
-            row["follower_id"], row["following_id"])
-        cur.execute(query)
+        query = "INSERT INTO FOLLOWS(follower_id, following_id) VALUES(%(follower_id)s, %(following_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1262,9 +1246,8 @@ def addMakesGeneralReact():
         print("Invalid react Type")
         return
     try:
-        query = "INSERT INTO MAKES_GENERAL_REACT(post_id, user_id, reacted_type) VALUES(%s, %s, '%s');" % (
-            row["post_id"], row["user_id"], row["reactedType"])
-        cur.execute(query)
+        query = "INSERT INTO MAKES_GENERAL_REACT(post_id, user_id, reacted_type) VALUES(%(post_id)s, %(user_id)s, %(reactedType)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1281,9 +1264,8 @@ def addLikes():
     # except Exception as e:
     #     print("Invalid USER ID")
     try:
-        query = "INSERT INTO LIKES(page_id, user_id) VALUES(%s, %s);" % (
-            row["page_id"], row["user_id"])
-        cur.execute(query)
+        query = "INSERT INTO LIKES(page_id, user_id) VALUES(%(page_id)s, %(user_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1299,9 +1281,8 @@ def addUserToGroup():
     row["group_id"] = input(
         "Enter the ID of the group that the user wants to join: ")
     try:
-        query = "INSERT INTO BELONGS_TO VALUES(%s, %s);" % (
-            row["user_id"], row["group_id"])
-        cur.execute(query)
+        query = "INSERT INTO BELONGS_TO VALUES(%(user_id)s, %(group_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1317,15 +1298,13 @@ def makeUserAdmin():
     row["group_id"] = input(
         "Enter the ID of the group for which user should be made an admin of: ")
     # Don't we have to check if the user is a member of the group?
-    query = "SELECT * FROM BELONGS_TO where group_id=%s and user_id=%s;" % (
-        row["group_id"], row["user_id"])
-    if isNonEmptyQuery(query) == False:
+    query = "SELECT * FROM BELONGS_TO where group_id=%(group_id)s and user_id=%(user_id)s;"
+    if isNonEmptyQuery(query, row) == False:
         print("User doesn't belong to the group or invalid query.")
         return
     try:
-        query = "INSERT INTO IS_ADMIN VALUES(%s, %s);" % (
-            row["user_id"], row["group_id"])
-        cur.execute(query)
+        query = "INSERT INTO IS_ADMIN VALUES(%(user_id)s, %(group_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1341,15 +1320,13 @@ def makeUserModerator():
     row["group_id"] = input(
         "Enter the ID of the group for which user should be made an moderator of: ")
     # Don't we have to check if the user is a member of the group?
-    query = "SELECT * FROM BELONGS_TO where group_id=%s and user_id=%s;" % (
-        row["group_id"], row["user_id"])
-    if isNonEmptyQuery(query) == False:
+    query = "SELECT * FROM BELONGS_TO where group_id=%(group_id)s and user_id=%(user_id)s;"
+    if isNonEmptyQuery(query, row) == False:
         print("User doesn't belong to the group or invalid query.")
         return
     try:
-        query = "INSERT INTO IS_MODERATOR VALUES(%s, %s);" % (
-            row["user_id"], row["group_id"])
-        cur.execute(query)
+        query = "INSERT INTO IS_MODERATOR VALUES(%(user_id)s, %(group_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1393,9 +1370,8 @@ def makeReactionToAComment():
         return
 
     try:
-        query = "INSERT INTO MAKES_A_REACT(comment_id, user_id, reacted_type) VALUES(%s, %s, '%s');" % (
-            row["comment_id"], row["user_id"], row["reactedType"])
-        cur.execute(query)
+        query = "INSERT INTO MAKES_A_REACT(comment_id, user_id, reacted_type) VALUES(%(comment_id)s, %(user_id)s, %(reactedType)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1415,9 +1391,8 @@ def mentionInComment():
         return
 
     try:
-        query = "INSERT INTO MENTIONS VALUES(%s, %s, %s);" % (
-            row["mentioner_id"], row["mentionee_id"], row["comment_id"])
-        cur.execute(query)
+        query = "INSERT INTO MENTIONS VALUES(%(mentioner_id)s, %(mentionee_id)s, %(comment_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1434,9 +1409,8 @@ def addCommmentsRelations():
         "Enter the ID of the post in which the comment is made: ")
 
     try:
-        query = "INSERT INTO COMMENTS VALUES(%s, %s, %s);" % (
-            row["comment_id"], row["user_id"], row["post_id"])
-        cur.execute(query)
+        query = "INSERT INTO COMMENTS VALUES(%(comment_id)s, %(user_id)s, %(post_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1450,11 +1424,11 @@ def addSendsSpecific(message_id):
     row["sender_id"] = input("Enter the ID of the sender: ")
     row["receiver_id"] = input("Enter the ID of the receiver: ")
     # row["message_id"] = input("Enter the ID of the message: ")
-
+    row["message_id"] = message_id
     try:
-        query = "INSERT INTO SENDS_SPECIFIC VALUES(%s, %s, %d);" % (
-            row["sender_id"], row["receiver_id"], message_id)
-        cur.execute(query)
+        # query = "INSERT INTO SENDS_SPECIFIC VALUES(%(sender_id)s, %(receiver_id)s, %d);" % (message_id)
+        query = "INSERT INTO SENDS_SPECIFIC VALUES(%(sender_id)s, %(receiver_id)s, %(message_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1468,14 +1442,14 @@ def addSendsGeneral(message_id):
     row["sender_id"] = input("Enter the ID of the sender: ")
     row["group_id"] = input("Enter the ID of the group: ")
     # row["message_id"] = input("Enter the ID of the message: ")
+    row["message_id"] = message_id
     if checkIsMemberOfGroup(row["sender_id"], row["group_id"]) == False:
         print("Error: Sender is not a member of the group.")
         return
 
     try:
-        query = "INSERT INTO SENDS_GENERAL VALUES(%s, %s, %d); " % (
-            row["sender_id"], row["group_id"], message_id)
-        cur.execute(query)
+        query = "INSERT INTO SENDS_GENERAL VALUES(%(sender_id)s, %(group_id)s, %(message_id)s); "
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1519,9 +1493,8 @@ def addResponds():
         return
 
     try:
-        query = "INSERT INTO RESPONDS VALUES(%s, %s,'%s');" % (
-            row["reacter_id"], row["story_id"], row["reactedType"])
-        cur.execute(query)
+        query = "INSERT INTO RESPONDS VALUES(%(reacter_id)s, %(story_id)s,%(reactedType)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1541,9 +1514,8 @@ def addShares():
         return
 
     try:
-        query = "INSERT INTO SHARES VALUES(%s, %s, %s);" % (
-            row["user_id"], row["group_id"], row["post_id"])
-        cur.execute(query)
+        query = "INSERT INTO SHARES VALUES(%(user_id)s, %(group_id)s, %(post_id)s);"
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1559,9 +1531,8 @@ def addIsTagged():
         "Enter the ID of the user who is tagged in the post: ")
 
     try:
-        query = "INSERT INTO IS_TAGGED VALUES(%s, %s); " % (
-            row["user_id"], row["post_id"])
-        cur.execute(query)
+        query = "INSERT INTO IS_TAGGED VALUES(%(user_id)s, %(post_id)s); "
+        cur.execute(query, row)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1802,8 +1773,10 @@ def insertionOptions():
         input("Press enter to Continue.")
 
 
+# --------------------------------- Insertions End ---------------------------------------------- #
+
 ###################################################################################################
-###############################################  DELETE ##########################################
+###############################################  DELETE ###########################################
 
 def viewTableDel(choice):
     if choice == '1':
