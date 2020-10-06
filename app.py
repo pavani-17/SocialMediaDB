@@ -1850,7 +1850,7 @@ def delOptions():
 
 def delUser():
     global cur
-    viewTableDel('1')
+    # viewTableDel('1')
     user_id = input("Enter the User ID of the User to be removed: ")
     try:
         user_id = int(user_id)
@@ -1869,12 +1869,12 @@ def delUser():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('1')
+    # viewTableDel('1')
 
 
 def delComment():
     global cur
-    viewTableDel('18')
+    # viewTableDel('18')
     comment_id = input("Enter the Comment ID of the Comment to be removed: ")
     try:
         comment_id = int(comment_id)
@@ -1891,12 +1891,12 @@ def delComment():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('18')
+    # viewTableDel('18')
 
 
 def delPost():
     global cur
-    viewTableDel('2')
+    # viewTableDel('2')
     post_id = input("Enter the Post ID of the Post you to be removed: ")
     try:
         post_id = int(post_id)
@@ -1913,12 +1913,12 @@ def delPost():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('2')
+    # viewTableDel('2')
 
 
 def delMessage():
     global cur
-    viewTableDel('4')
+    # viewTableDel('4')
     message_id = input("Enter the Message ID of the Message to be removed: ")
     try:
         message_id = int(message_id)
@@ -1935,12 +1935,12 @@ def delMessage():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('4')
+    # viewTableDel('4')
 
 
 def delStory():
     global cur
-    viewTableDel('3')
+    # viewTableDel('3')
     story_id = input("Enter the Story ID of the Story to be removed: ")
     try:
         story_id = int(story_id)
@@ -1957,12 +1957,12 @@ def delStory():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('3')
+    # viewTableDel('3')
 
 
 def delPage():
     global cur
-    viewTableDel('7')
+    # viewTableDel('7')
     page_id = input("Enter the Page ID of the Page to be removed: ")
     try:
         page_id = int(page_id)
@@ -1979,14 +1979,14 @@ def delPage():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('7')
+    # viewTableDel('7')
 
 
 ############### Relationships #################
 
 def unFollow():
     global cur
-    viewTableDel('19')
+    # viewTableDel('19')
     follower_id = input("Enter the Follower's User Id: ")
     following_id = input("Enter the User ID of the user to be unfollowed: ")
     try:
@@ -2006,12 +2006,12 @@ def unFollow():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('19')
+    # viewTableDel('19')
 
 
 def generalUnreact():
     global cur
-    viewTableDel('20')
+    # viewTableDel('20')
     user_id = input("Enter the Reacting User Id: ")
     post_id = input("Enter the Post ID of the Post to be unreacted: ")
     try:
@@ -2031,12 +2031,12 @@ def generalUnreact():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('20')
+    # viewTableDel('20')
 
 
 def unLike():
     global cur
-    viewTableDel('21')
+    # viewTableDel('21')
     user_id = input("Enter the User Id of the User who wants to unlike: ")
     page_id = input("Enter the Page ID of the Page to be unliked: ")
 
@@ -2057,12 +2057,12 @@ def unLike():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('21')
+    # viewTableDel('21')
 
 
 def exitGroup():
     global cur
-    viewTableDel('22')
+    # viewTableDel('22')
     user_id = input("Enter the User ID of the User who wants to exit: ")
     group_id = input("Enter the Group ID of the Group: ")
 
@@ -2089,12 +2089,12 @@ def exitGroup():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('22')
+    # viewTableDel('22')
 
 
 def unAdmin():
     global cur
-    viewTableDel('23')
+    # viewTableDel('23')
     user_id = input("Enter the User ID of the User to be removed from Admin: ")
     group_id = input("Enter the Group ID of the Group: ")
 
@@ -2115,12 +2115,12 @@ def unAdmin():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('23')
+    # viewTableDel('23')
 
 
 def unModerator():
     global cur
-    viewTableDel('24')
+    # viewTableDel('24')
     user_id = input(
         "Enter the User ID of the User to be removed from moderator: ")
     group_id = input("Enter the Group ID of the Group: ")
@@ -2142,12 +2142,12 @@ def unModerator():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('24')
+    # viewTableDel('24')
 
 
 def unReact():
     global cur
-    viewTableDel('25')
+    # viewTableDel('25')
     user_id = input("Enter the Reacting User Id: ")
     comment_id = input("Enter the Comment ID of the Comment to be unreacted: ")
 
@@ -2168,13 +2168,13 @@ def unReact():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('25')
+    # viewTableDel('25')
     return
 
 
 def unMention():
     global cur
-    viewTableDel('26')
+    # viewTableDel('26')
     comment_id = input("Enter the Comment ID to be unmentioned from: ")
     mentionee_id = input("Enter the User ID to be unmentioned: ")
     try:
@@ -2193,13 +2193,13 @@ def unMention():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('26')
+    # viewTableDel('26')
     return
 
 
 def unRespond():
     global cur
-    viewTableDel('29')
+    # viewTableDel('29')
     story_id = input("Enter the Story ID to unreact: ")
     reacter_id = input("Enter the User ID of the User unreacting: ")
     try:
@@ -2218,13 +2218,13 @@ def unRespond():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('29')
+    # viewTableDel('29')
     return
 
 
 def unTag():
     global cur
-    viewTableDel('31')
+    # viewTableDel('31')
     post_id = input("Enter the Post ID to be untagged from: ")
     user_id = input("Enter the User ID to be untagged: ")
     try:
@@ -2243,7 +2243,7 @@ def unTag():
         print(e)
         print("\n\nError!\n")
         return
-    viewTableDel('31')
+    # viewTableDel('31')
     return
 
 ###############################################################################################
@@ -2252,7 +2252,7 @@ def unTag():
 
 
 def updatePost():
-    viewTableDel('2')
+    # viewTableDel('2')
     global cur
     post = {}
     try:
@@ -2274,12 +2274,12 @@ def updatePost():
         print("Try again with different data :(")
         return
 
-    viewTableDel('2')
+    # viewTableDel('2')
     return
 
 
 def updateComment():
-    viewTableDel('18')
+    # viewTableDel('18')
     global cur
     comment = {}
     try:
@@ -2301,11 +2301,11 @@ def updateComment():
         print("Try again with different data :(")
         return
 
-    viewTableDel('18')
+    # viewTableDel('18')
 
 
 def updateStory():
-    viewTableDel('3')
+    # viewTableDel('3')
     global cur
     story = {}
 
@@ -2329,11 +2329,11 @@ def updateStory():
         print("Try again with different data :(")
         return
 
-    viewTableDel('3')
+    # viewTableDel('3')
 
 
 def updatePage():
-    viewTableDel('7')
+    # viewTableDel('7')
     global cur
     page = {}
 
@@ -2356,11 +2356,11 @@ def updatePage():
         print("Try again with different data :(")
         return
 
-    viewTableDel('7')
+    # viewTableDel('7')
 
 
 def updateGeneralReact():
-    viewTableDel('20')
+    # viewTableDel('20')
     global cur
     react = {}
 
@@ -2413,11 +2413,11 @@ def updateGeneralReact():
         print("Try again with different data :(")
         return
 
-    viewTableDel('20')
+    # viewTableDel('20')
 
 
 def updateMakesReact():
-    viewTableDel('25')
+    # viewTableDel('25')
     global cur
     react = {}
 
@@ -2470,11 +2470,11 @@ def updateMakesReact():
         print("Try again with different data :(")
         return
 
-    viewTableDel('25')
+    # viewTableDel('25')
 
 
 def updateResponds():
-    viewTableDel('29')
+    # viewTableDel('29')
     global cur
     react = {}
 
@@ -2527,11 +2527,11 @@ def updateResponds():
         print("Try again with different data :(")
         return
 
-    viewTableDel('29')
+    # viewTableDel('29')
 
 
 def updateGroup():
-    viewTableDel('17')
+    # viewTableDel('17')
     global cur
     group = {}
 
@@ -2575,11 +2575,11 @@ def updateGroup():
         print("Try again with different data :(")
         return
 
-    viewTableDel('17')
+    # viewTableDel('17')
 
 
 def updateProfile():
-    viewTableDel('5')
+    # viewTableDel('5')
     global cur
     profile = {}
 
@@ -2603,7 +2603,7 @@ def updateProfile():
         print("Try again with different data")
         return
 
-    viewTableDel('5')
+    # viewTableDel('5')
 
 
 def updatePassword():
