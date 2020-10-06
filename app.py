@@ -22,7 +22,7 @@ def printWeeklyReport():
         con.rollback()
         print(e)
         return
-    # print(cur.fetchone())
+
     query = "select CAST(MAX(CAST(uptime as float)) as TIME) as 'MAXIMUM UPTIME'from USER;"
     try:
         cur.execute(query)
@@ -33,7 +33,7 @@ def printWeeklyReport():
         con.rollback()
         print(e)
         return
-    # print(cur.fetchall())
+
     query = "select CAST(AVG(CAST(uptime as float)) as TIME) as 'MEAN UPTIME' from USER;"
     try:
         cur.execute(query)
@@ -44,10 +44,8 @@ def printWeeklyReport():
         con.rollback()
         print(e)
         return
-    # print(cur.fetchall())
+
     query = """select CAST(AVG(CAST(med.uptime as float)) as TIME) as 'MEDIAN UPTIME' from (select @rowindex:=@rowindex + 1 as rowindex, USER.uptime from USER order by uptime) AS med where med.rowindex in (FLOOR(@rowindex/2), CEIL(@rowindex/2));"""
-    # print(query)
-    # con.autocommit()
     try:
         cur.execute("set@rowindex := -1;")
         con.commit()
@@ -58,8 +56,7 @@ def printWeeklyReport():
     except Exception as e:
         con.rollback()
         print(e)
-        # return
-    # print(cur.fetchall())
+
     query = "select stddev(uptime) as 'STANDARD DEVIATION OF UPTIME' from USER;"
     try:
         cur.execute(query)
@@ -70,7 +67,6 @@ def printWeeklyReport():
         con.rollback()
         print(e)
         return
-    # print(cur.fetchall())
 
 
 def search():
@@ -82,12 +78,14 @@ def search():
     print("3. Comment")
     print("4. Page")
     print("5. Group")
+
     try:
         search_param = int(input("Enter the number of the required domain: "))
     except Exception as e:
         print(e)
         print("Invalid domain type")
         return
+
     if search_param == 1:
         search_type = "USER"
         search_field = "name"
@@ -129,6 +127,7 @@ def generateReport():
         print(e)
         print("User ID must be a number")
         return
+
     try:
 
         query = "SELECT * FROM USER WHERE user_id=%d" % (user_id)
@@ -439,7 +438,6 @@ def eventTracker():
     except Exception as e:
         print(e)
         print("ERROR")
-        return
 
 
 def listReacttoPost():
@@ -460,8 +458,6 @@ def listReacttoPost():
     except Exception as e:
         print(e)
         print("ERROR")
-        return
-    return
 
 
 def listReacttoComment():
@@ -482,8 +478,6 @@ def listReacttoComment():
     except Exception as e:
         print(e)
         print("ERROR")
-        return
-    return
 
 
 def listCommenttoPost():
@@ -504,8 +498,6 @@ def listCommenttoPost():
     except Exception as e:
         print(e)
         print("ERROR")
-        return
-    return
 
 
 def postListing():
@@ -522,11 +514,9 @@ def postListing():
             listReacttoPost()
         else:
             print("Invalid Option")
-        return
     except Exception as e:
         print(e)
         print("ERROR")
-        return
 
 
 def commentListing():
@@ -540,11 +530,9 @@ def commentListing():
             listReacttoComment()
         else:
             print("Invalid Option")
-        return
     except Exception as e:
         print(e)
         print("ERROR")
-        return
 
 
 def showSuggestions():
@@ -552,6 +540,7 @@ def showSuggestions():
     print("1. User")
     print("2. Page")
     print("3. Group")
+
     try:
         optn = int(input("Enter option : "))
         if (optn == 1):
@@ -641,20 +630,16 @@ def checkIsMemberOfGroup(user_id, group_id):
     try:
         query = "SELECT * FROM BELONGS_TO WHERE user_id=%d AND group_id=%d;" % (
             int(user_id), int(group_id))
-        # print(query)
         try:
             cur.execute(query)
             con.commit()
-            # print(cur.fetchall())
             if cur.rowcount == 0:
-                # print("oops")
                 return False
             return True
         except Exception as e:
             con.rollback()
             return False
     except Exception as enx:
-        # print("hi")
         return False
 
 
@@ -664,20 +649,16 @@ def checkCommentIntegrity(comment_id, user_id):
     try:
         query = "SELECT * FROM COMMENTS WHERE user_id=%d AND comment_id=%d;" % (
             int(user_id), int(comment_id))
-        # print(query)
         try:
             cur.execute(query)
             con.commit()
-            # print(cur.fetchall())
             if cur.rowcount == 0:
-                # print("oops")
                 return False
             return True
         except Exception as e:
             con.rollback()
             return False
     except Exception as enx:
-        # print("hi")
         return False
 
 
@@ -721,7 +702,6 @@ def viewOptions():
     global cur
     while(1):
         tmp = sp.call('clear', shell=True)
-        refreshDatabase()
         print("\nChoose the data that you want to see.\n\n")
         print("1.  USERS")
         print("2.  POST")
@@ -742,7 +722,7 @@ def viewOptions():
         print("16. PAGES OF CAUSE COMMUNITIES")
         # Groups
         print("17. GROUPS")
-        # RelatioNships
+        # Relationships
         print("18. COMMENTS RELATIONSHIPS")
         print("19. FOLLOWS RELATIONSHIPS")
         print("20. GENERAL REACTS TO POSTS")
@@ -873,14 +853,6 @@ def addUser():
 def addProfile():
     print("Enter the profile details of the user below.\n")
     profile = {}
-    # try:
-    #     query = "SELECT user_id FROM USER WHERE password='%s' AND name='%s' AND email='%s'" %(user['password'],user['name'],user['email'])
-    #     cur.execute(query)
-    #     profile["user_id"] = cur.fetchone()[0]
-    # except Exception as e:
-    #     cur.rollback()
-    #     print(e)
-    #     print("Something went wrong")
     profile['user_id'] = input("Enter user id of the user: ")
     profile['dob'] = input("Enter Date-of-Birth in YYYY-MM-DD format: ")
     profile['sex'] = input(
@@ -922,7 +894,6 @@ def addComment():
     row["text"] = input("Enter the comment: ")
     row["media"] = input("Enter the link to the media: ")
 
-    # Reminder: Do the following check in all valid places.
     if len(row["text"]) == 0 and len(row["media"]) == 0:
         print("You can't make an empty comment!")
         return
@@ -1175,13 +1146,6 @@ def addCauseCommunity():
         print(e)
         print("Error: Check your inputs.")
 
-# def isValidUserID(user_id):
-#     cur.execute("SELECT user_id from USER where user_id=%s;" % (user_id))
-#     con.commit()
-#     if cur.rowcount == 0:
-#         return False
-#     return True
-
 
 def addFollows():
     global cur
@@ -1189,14 +1153,9 @@ def addFollows():
     row = {}
     row["follower_id"] = input(
         "Enter user ID of the person that wants to follow someone: ")
-    # if isValidUserID(row["follower_id"]) == False:
-    #     print("Invalid user_id")
-    #     return
     row["following_id"] = input(
         "Enter the user ID of the person that will be followed by the former person: ")
-    # if isValidUserID(row["follower_id"]) == False:
-    #     print("Invalid user_id")
-    #     return
+
     try:
         query = "INSERT INTO FOLLOWS(follower_id, following_id) VALUES(%(follower_id)s, %(following_id)s);"
         cur.execute(query, row)
@@ -1211,14 +1170,8 @@ def addMakesGeneralReact():
     global cur
     row = {}
 
-    # try:
     row["post_id"] = input("Enter the POST ID: ")
-    # except Exception as e:
-    #     print("Invalid POST ID")
-    # try:
     row["user_id"] = input("Enter your USER ID: ")
-    # except Exception as e:
-    #     print("Invalid USER ID")
 
     print("Choose the react type by pressing the corresponding number")
     print("1 . Like")
@@ -1261,11 +1214,8 @@ def addMakesGeneralReact():
 def addLikes():
     global cur
     row = {}
-    # try:
     row["user_id"] = input("Enter the user ID: ")
     row["page_id"] = input("Enter the page ID of the page to like: ")
-    # except Exception as e:
-    #     print("Invalid USER ID")
     try:
         query = "INSERT INTO LIKES(page_id, user_id) VALUES(%(page_id)s, %(user_id)s);"
         cur.execute(query, row)
@@ -1300,8 +1250,9 @@ def makeUserAdmin():
         "Enter the ID of the user to make him an admin of a group: ")
     row["group_id"] = input(
         "Enter the ID of the group for which user should be made an admin of: ")
-    # Don't we have to check if the user is a member of the group?
+
     query = "SELECT * FROM BELONGS_TO where group_id=%(group_id)s and user_id=%(user_id)s;"
+
     if isNonEmptyQuery(query, row) == False:
         print("User doesn't belong to the group or invalid query.")
         return
@@ -1322,7 +1273,7 @@ def makeUserModerator():
         "Enter the ID of the user to make him an moderator of a group: ")
     row["group_id"] = input(
         "Enter the ID of the group for which user should be made an moderator of: ")
-    # Don't we have to check if the user is a member of the group?
+
     query = "SELECT * FROM BELONGS_TO where group_id=%(group_id)s and user_id=%(user_id)s;"
     if isNonEmptyQuery(query, row) == False:
         print("User doesn't belong to the group or invalid query.")
@@ -1426,10 +1377,8 @@ def addSendsSpecific(message_id):
     row = {}
     row["sender_id"] = input("Enter the ID of the sender: ")
     row["receiver_id"] = input("Enter the ID of the receiver: ")
-    # row["message_id"] = input("Enter the ID of the message: ")
     row["message_id"] = message_id
     try:
-        # query = "INSERT INTO SENDS_SPECIFIC VALUES(%(sender_id)s, %(receiver_id)s, %d);" % (message_id)
         query = "INSERT INTO SENDS_SPECIFIC VALUES(%(sender_id)s, %(receiver_id)s, %(message_id)s);"
         cur.execute(query, row)
         con.commit()
@@ -1444,7 +1393,6 @@ def addSendsGeneral(message_id):
     row = {}
     row["sender_id"] = input("Enter the ID of the sender: ")
     row["group_id"] = input("Enter the ID of the group: ")
-    # row["message_id"] = input("Enter the ID of the message: ")
     row["message_id"] = message_id
     if checkIsMemberOfGroup(row["sender_id"], row["group_id"]) == False:
         print("Error: Sender is not a member of the group.")
@@ -1546,7 +1494,6 @@ def addIsTagged():
 def showUserCreationOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
-        refreshDatabase()
         print("Choose an option from below: ")
         print("1. Create a new USER.")
         print("2. Create a profile for a user.")
@@ -1571,7 +1518,6 @@ def showUserCreationOptions():
 def showPostRelatedOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
-        refreshDatabase()
         print("Choose an option from below: ")
         print("1. Create a new post.")
         print("2. Create a new comment.")
@@ -1611,7 +1557,6 @@ def showPostRelatedOptions():
 def showGroupRelatedOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
-        refreshDatabase()
         print("Choose an option from below: ")
         print("1. Create a new group.")
         print("2. Make a new admin in a group.")
@@ -1631,11 +1576,9 @@ def showGroupRelatedOptions():
             addUserToGroup()
         elif n == '5':
             addMessage()
-            # cur.execute("select message_id from MESSAGE order by message_id desc limit 1;")
             cur.execute("SELECT LAST_INSERT_ID();")
             con.commit()
             output = cur.fetchone()
-            # print(output['LAST_INSERT_ID()'])
             addSendsGeneral(output['LAST_INSERT_ID()'])
         elif n == '6':
             addShares()
@@ -1650,7 +1593,6 @@ def showGroupRelatedOptions():
 def showUserToUserOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
-        refreshDatabase()
         print("Choose an option from below: ")
         print("1. Follow someone. ")
         print("2. Send a message to a user. ")
@@ -1675,7 +1617,6 @@ def showUserToUserOptions():
 def showStoryOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
-        refreshDatabase()
         print("Choose an option from below: ")
         print("1. Create a new story. ")
         print("2. Respond to a story. ")
@@ -1696,7 +1637,6 @@ def showStoryOptions():
 def showPageOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
-        refreshDatabase()
         print("Choose an option from below: ")
         print("1. Like a page.")
         print("2. Create a new page.")
@@ -1744,7 +1684,6 @@ def showPageOptions():
 def insertionOptions():
     while(1):
         tmp = sp.call('clear', shell=True)
-        refreshDatabase()
         print("Choose an option from below: ")
         print("1. Insertions related to users and profile.")
         print("2. Insertions related to post.")
@@ -1931,7 +1870,6 @@ def delUser():
         print("\n\nError!\n")
         return
     viewTableDel('1')
-    return
 
 
 def delComment():
@@ -1954,7 +1892,6 @@ def delComment():
         print("\n\nError!\n")
         return
     viewTableDel('18')
-    return
 
 
 def delPost():
@@ -1977,7 +1914,6 @@ def delPost():
         print("\n\nError!\n")
         return
     viewTableDel('2')
-    return
 
 
 def delMessage():
@@ -2000,7 +1936,6 @@ def delMessage():
         print("\n\nError!\n")
         return
     viewTableDel('4')
-    return
 
 
 def delStory():
@@ -2023,7 +1958,6 @@ def delStory():
         print("\n\nError!\n")
         return
     viewTableDel('3')
-    return
 
 
 def delPage():
@@ -2046,7 +1980,6 @@ def delPage():
         print("\n\nError!\n")
         return
     viewTableDel('7')
-    return
 
 
 ############### Relationships #################
@@ -2074,7 +2007,6 @@ def unFollow():
         print("\n\nError!\n")
         return
     viewTableDel('19')
-    return
 
 
 def generalUnreact():
@@ -2100,7 +2032,6 @@ def generalUnreact():
         print("\n\nError!\n")
         return
     viewTableDel('20')
-    return
 
 
 def unLike():
@@ -2108,6 +2039,7 @@ def unLike():
     viewTableDel('21')
     user_id = input("Enter the User Id of the User who wants to unlike: ")
     page_id = input("Enter the Page ID of the Page to be unliked: ")
+
     try:
         user_id = int(user_id)
         page_id = int(page_id)
@@ -2115,6 +2047,7 @@ def unLike():
         print(e)
         print("\n\nError!\n")
         return
+
     query = "DELETE FROM FOLLOWS LIKES WHERE user_id='%d' AND page_id = %d;" % (
         user_id, page_id)
     try:
@@ -2125,7 +2058,6 @@ def unLike():
         print("\n\nError!\n")
         return
     viewTableDel('21')
-    return
 
 
 def exitGroup():
@@ -2133,6 +2065,7 @@ def exitGroup():
     viewTableDel('22')
     user_id = input("Enter the User ID of the User who wants to exit: ")
     group_id = input("Enter the Group ID of the Group: ")
+
     try:
         user_id = int(user_id)
         group_id = int(group_id)
@@ -2140,6 +2073,7 @@ def exitGroup():
         print(e)
         print("\n\nError!\n")
         return
+
     query1 = "DELETE FROM BELONGS_TO WHERE user_id='%d' AND group_id = %d;" % (
         user_id, group_id)
     query2 = "DELETE FROM IS_ADMIN WHERE user_id='%d' AND group_id = %d;" % (
@@ -2156,7 +2090,6 @@ def exitGroup():
         print("\n\nError!\n")
         return
     viewTableDel('22')
-    return
 
 
 def unAdmin():
@@ -2164,6 +2097,7 @@ def unAdmin():
     viewTableDel('23')
     user_id = input("Enter the User ID of the User to be removed from Admin: ")
     group_id = input("Enter the Group ID of the Group: ")
+
     try:
         user_id = int(user_id)
         group_id = int(group_id)
@@ -2171,6 +2105,7 @@ def unAdmin():
         print(e)
         print("\n\nError!\n")
         return
+
     query = "DELETE FROM IS_ADMIN WHERE (user_id='%d') AND (group_id = %d);" % (
         user_id, group_id)
     try:
@@ -2181,7 +2116,6 @@ def unAdmin():
         print("\n\nError!\n")
         return
     viewTableDel('23')
-    return
 
 
 def unModerator():
@@ -2190,6 +2124,7 @@ def unModerator():
     user_id = input(
         "Enter the User ID of the User to be removed from moderator: ")
     group_id = input("Enter the Group ID of the Group: ")
+
     try:
         user_id = int(user_id)
         group_id = int(group_id)
@@ -2197,6 +2132,7 @@ def unModerator():
         print(e)
         print("\n\nError!\n")
         return
+
     query = "DELETE FROM IS_MODERATOR WHERE user_id='%d' AND group_id = %d;" % (
         user_id, group_id)
     try:
@@ -2207,7 +2143,6 @@ def unModerator():
         print("\n\nError!\n")
         return
     viewTableDel('24')
-    return
 
 
 def unReact():
@@ -2215,6 +2150,7 @@ def unReact():
     viewTableDel('25')
     user_id = input("Enter the Reacting User Id: ")
     comment_id = input("Enter the Comment ID of the Comment to be unreacted: ")
+
     try:
         user_id = int(user_id)
         comment_id = int(comment_id)
@@ -2222,6 +2158,7 @@ def unReact():
         print(e)
         print("\n\nError!\n")
         return
+
     query = "DELETE FROM MAKES_A_REACT WHERE user_id='%d' AND comment_id = %d;" % (
         user_id, comment_id)
     try:
@@ -2365,7 +2302,6 @@ def updateComment():
         return
 
     viewTableDel('18')
-    return
 
 
 def updateStory():
@@ -2394,7 +2330,6 @@ def updateStory():
         return
 
     viewTableDel('3')
-    return
 
 
 def updatePage():
@@ -2422,7 +2357,6 @@ def updatePage():
         return
 
     viewTableDel('7')
-    return
 
 
 def updateGeneralReact():
@@ -2480,7 +2414,6 @@ def updateGeneralReact():
         return
 
     viewTableDel('20')
-    return
 
 
 def updateMakesReact():
@@ -2538,7 +2471,6 @@ def updateMakesReact():
         return
 
     viewTableDel('25')
-    return
 
 
 def updateResponds():
@@ -2596,7 +2528,6 @@ def updateResponds():
         return
 
     viewTableDel('29')
-    return
 
 
 def updateGroup():
@@ -2645,7 +2576,6 @@ def updateGroup():
         return
 
     viewTableDel('17')
-    return
 
 
 def updateProfile():
@@ -2674,21 +2604,10 @@ def updateProfile():
         return
 
     viewTableDel('5')
-    return
 
 
 def updatePassword():
     global cur
-    # query = "SELECT user_id,name,email FROM USER"
-    # try:
-    #     no_of_rows = cur.execute(query)
-
-    # except Exception as e:
-    #     print(e)
-    #     return
-    # rows = cur.fetchall()
-    # viewTable(rows)
-    # con.commit()
 
     user = {}
     try:
@@ -2707,7 +2626,7 @@ def updatePassword():
     except Exception as e:
         print(e)
         return
-    # print(prev_pass,user["prev_password"])
+
     if (prev_pass == user["prev_password"]):
         user["new_password"] = input("Enter your new password: ")
         try:
@@ -2777,19 +2696,9 @@ def updOptions():
 
 ###############################################################################################
 
-
-def refreshDatabase():
-    global cur
-
-    # Deleting incorrectly entered data in insert function
-    # Have to write this function.
-    print("Hello: Refreshing database")  # Test printline.
-
-
 while(1):
     tmp = sp.call('clear', shell=True)
-    # The two lines below should be uncommented
-    try :
+    try:
         username = input("Username: ")
         password = input("Password: ")
         port = int(input("Port: "))
@@ -2801,7 +2710,7 @@ while(1):
 
     try:
         con = pymysql.connect(host=host,
-                              user=root,
+                              user=username,
                               password=password,
                               db='social_media',
                               cursorclass=pymysql.cursors.DictCursor,
@@ -2813,18 +2722,12 @@ while(1):
         tmp = input("Enter any key to CONTINUE>")
         continue
 
-    # print("hi\n")
-    # ts = time.time()
-    # asdf = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-    # print("HI: %s\n" %(asdf))
-    # input("hisd")
-    # # print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     con.escape_string("'")
+
     with con.cursor() as cur:
         exitflag = 0
         while(1):
             tmp = sp.call('clear', shell=True)
-            refreshDatabase()
             print("CHOOSE AN OPTION\n")
             print("1. General View Options")
             print("2. Insertion Options")

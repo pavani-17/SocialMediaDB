@@ -15,12 +15,13 @@ CREATE TABLE USER ( -- Done
 
 -- insert into USER VALUES(NULL, 'sdfsfs', 'NMAE',  'pb@afsd.com', 'voldem', 1231231, '12:12:21');
 insert into USER VALUES(NULL, '#unbreakable_password', 'Nirmal',  'nirmal@nmc.com', 'Bakul Nivas, IIIT Hyderabad', 9812517891, '03:12:20');
+insert into USER VALUES(NULL, '#Chowkdar', 'Pinarayi Vijayan',  'cmo@kerala.gov.in', 'Cliff House, Kerala', 1111167911, '174:03:04');
+insert into USER VALUES(NULL, '#Chowke', 'Narendra Modi',  'pmo@gov.in', '7 Lok Kalyan Marg, California', 1111114231, '100:00:04');
 insert into USER VALUES(NULL, '#PinRaYI', 'Alapan',  'alapan.sau@students.iiit.ac.in', 'Cliff House, Kolkata', 10020030019, '00:03:00');
 insert into USER VALUES(NULL, '#Chowkeedar', 'Pavani',  'pavani.babburi@students.iiit.ac.in', '7 Lok Kalyan Marg, Andhra Pradesh', 11113521111, '100:00:04');
-insert into USER VALUES(NULL, '#Chowke', 'Alice',  'alice.stanley@students.iiit.ac.in', '7 Lok Kalyan Marg, California', 1111114231, '100:00:04');
 insert into USER VALUES(NULL, '#Brokeedar', 'Hasvitha',  'hasvitha.verma@students.iiit.ac.in', '72C, Viskhapatnam, Andhra Pradesh', 11111163281, '10:05:04');
 insert into USER VALUES(NULL, '#Chowkeedar', 'Sharadha',  'sharadha.iyer@students.iiit.ac.in', '7 Lok Camel Marg, Bangalore', 1111111111, '194:03:04');
-insert into USER VALUES(NULL, '#Chowkdar', 'Pavani',  'pavani.chowdhury@students.iiit.ac.in', '7 Lok Camel Marg, States', 1111167911, '174:03:04');
+
 
 DROP TABLE IF EXISTS POST;
 CREATE TABLE POST ( -- Done
