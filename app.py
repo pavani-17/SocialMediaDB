@@ -842,6 +842,7 @@ def viewOptions():
             print("\n\nError!\n")
         input("Press enter to continue.")
 
+# ------------------------------ Insertions Start ----------------------------------------------#
 
 def addUser():
     global cur
@@ -856,9 +857,8 @@ def addUser():
         "Please enter the phone number [without space or hyphen]: ")
 
     try:
-        query = "INSERT INTO USER VALUES(NULL, '%s','%s','%s','%s',%s, '00:00:00');" % (
-            user["password"], user["name"], user["email"], user["address"], user["phone"])
-        cur.execute(query)
+        query = "INSERT INTO USER VALUES(NULL, %(password)s, %(name)s, %(email)s, %(address)s, %(phone)s, '00:00:00');"
+        cur.execute(query, user)
         con.commit()
     except Exception as e:
         con.rollback()
@@ -1802,8 +1802,10 @@ def insertionOptions():
         input("Press enter to Continue.")
 
 
+# --------------------------------- Insertions End ---------------------------------------------- #
+
 ###################################################################################################
-###############################################  DELETE ##########################################
+###############################################  DELETE ###########################################
 
 def viewTableDel(choice):
     if choice == '1':
