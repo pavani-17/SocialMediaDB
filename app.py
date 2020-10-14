@@ -2769,7 +2769,8 @@ while(1):
             print("9. Post-specific View Options")
             print("10. Comment-specific View Options")
             print("11. See weekly report of the user.")
-            print("12. Quit")
+            print("12. Event Tracker")
+            print("13. Quit")
             inp = input("\nENTER: ")
             if(inp == '1'):
                 viewOptions()
@@ -2793,7 +2794,9 @@ while(1):
                 commentListing()
             elif inp == '11':
                 printWeeklyReport()
-            elif(inp == '12'):
+            elif inp == '12':
+                eventTracker()
+            elif(inp == '13'):
                 exitflag = 1
                 print("Exiting.")
                 break
